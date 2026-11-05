@@ -105,13 +105,24 @@ describe("the implementer's test-file hook (Claude Code)", () => {
       "rm src/*.ts",
       "cp payload.json src/fixtures/",
       "mv new.json src/fixtures",
+      "mv src/story.test.ts dist/",
+      "cp other.json src/fixtures/story.json",
     ]) {
       it(`denies ${JSON.stringify(command)}, which reaches a test file through a directory`, () => {
         assert.ok(denied(runHook("Bash", { command })));
       });
     }
 
-    for (const command of ["rm -rf dist", "cp build.ts src/", "cd src && rm story.ts", "cd dist && rm -r .", "rm dist/*.js"]) {
+    for (const command of [
+      "rm -rf dist",
+      "cp build.ts src/",
+      "cd src && rm story.ts",
+      "cd dist && rm -r .",
+      "rm dist/*.js",
+      "cp src/fixtures/story.json /tmp/story.json",
+      "cp -r src/fixtures dist/",
+      "ln -s src/story.test.ts dist/story.test.ts.link",
+    ]) {
       it(`allows ${JSON.stringify(command)}, which reaches no test file`, () => {
         assert.equal(runHook("Bash", { command }).decision, undefined);
       });
@@ -143,6 +154,15 @@ describe("the implementer's test-file hook (Claude Code)", () => {
     });
 
     assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, "deny");
+  });
+
+  it("blocks every call when testFiles is empty, rather than protecting nothing", () => {
+    writeFileSync(join(project, ".agents/factory.json"), JSON.stringify({ testFiles: [] }));
+
+    const result = runHook("Edit", { file_path: join(project, "src/story.test.ts") });
+
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /at least one glob/);
   });
 
   it("blocks every call when the config can't be read, rather than letting edits through", () => {

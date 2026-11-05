@@ -16,8 +16,9 @@ export const configPath = ".agents/factory.json";
 export function readTestFiles(root) {
   const config = JSON.parse(readFileSync(resolve(root, configPath), "utf8"));
   const globs = config?.testFiles;
-  if (!Array.isArray(globs) || !globs.every((glob) => typeof glob === "string")) {
-    throw new Error("testFiles must be a list of globs");
+  // An empty list would protect nothing, so it fails closed like a missing one.
+  if (!Array.isArray(globs) || globs.length === 0 || !globs.every((glob) => typeof glob === "string")) {
+    throw new Error("testFiles must be a list of at least one glob");
   }
   return globs;
 }
@@ -25,6 +26,8 @@ export function readTestFiles(root) {
 const writingPrograms = new Set(["rm", "mv", "cp", "tee", "touch", "truncate", "ln", "dd", "patch"]);
 // Their last argument is a destination that keeps its other files.
 const copyingPrograms = new Set(["mv", "cp", "ln"]);
+// They only read their sources; mv removes its sources, so it changes them too.
+const sourceReadingPrograms = new Set(["cp", "ln"]);
 const writingGitCommands = new Set(["checkout", "restore", "rm", "mv", "apply"]);
 const prefixes = new Set(["sudo", "env", "command", "xargs", "nohup", "time"]);
 const skippedDirectories = new Set(["node_modules", ".git", ".nx"]);
@@ -56,11 +59,14 @@ function shellTargets(command, cwd) {
     if (writingPrograms.has(program) || inPlace || gitWrite) {
       const paths = args.filter((arg) => !arg.startsWith("-"));
       const destination = copyingPrograms.has(program) && paths.length > 1 ? paths.at(-1) : undefined;
+      // Into a folder (one that exists, or a path ending in `/`), each source lands under its name.
+      const intoFolder =
+        destination !== undefined &&
+        (destination.endsWith("/") || (dir !== undefined && isDirectory(resolve(dir, destination))));
       for (const path of paths) {
         if (path === destination) continue;
-        written.push({ path, recursive: true });
-        // Into a folder, a copy or move lands at the folder plus the source's name.
-        if (destination !== undefined) written.push({ path: join(destination, basename(path)), recursive: true });
+        if (destination === undefined || !sourceReadingPrograms.has(program)) written.push({ path, recursive: true });
+        if (intoFolder) written.push({ path: join(destination, basename(path)), recursive: true });
       }
       if (destination !== undefined) written.push({ path: destination, recursive: false });
     }

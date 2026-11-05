@@ -53,7 +53,7 @@ Then check `.agents/factory.json` against `factory.schema.json`, and fix each pr
 
 - every key in `required` is there, and no key the schema doesn't define;
 - `codingAgent` is one the schema lists, and `validate` is a command;
-- `testFiles` has at least one glob, and matches the test files that exist (`git ls-files`);
+- `testFiles` is a list of at least one glob, each a string, and together they match every test file that exists (`git ls-files`). A wrong value here makes the implementer's hook block every edit;
 - each `riskTiers` rule has a tier and paths, and the last one matches every path (`**`).
 
 ## 5. Install for the coding agent
@@ -61,7 +61,7 @@ Then check `.agents/factory.json` against `factory.schema.json`, and fix each pr
 For `claude-code`, from `../factory/adapters/claude-code/`:
 
 - **Agents**: copy each file in `agents/` to `.claude/agents/`, replacing an earlier copy. Delete any `.claude/agents/factory-*.md` whose first frontmatter line says it was rendered by the Factory but that `agents/` no longer has; leave other agent files alone.
-- **Stop hook**: merge `settings.json` into `.claude/settings.json`, creating it if needed. Keep every other setting and hook; replace an earlier Factory Stop hook (a command naming `stop-validate.mjs`) rather than adding a second one.
+- **Stop hook**: merge `settings.json` into `.claude/settings.json`, creating it if needed. Keep every other setting and hook. When a Stop hook entry already runs `stop-validate.mjs`, replace that one entry, leaving the other hooks in its group, rather than adding a second one.
 - **Skills path**: the agents and hooks name `.claude/skills/factory/` and `.claude/skills/factory-result/`. Check that both exist (they do when `npx skills` installed for Claude Code); when the skills are only in `.agents/skills/`, link `.claude/skills/<name>` to them.
 - **Worktrees**: add `.claude/worktrees/` to `.gitignore` if it isn't there.
 

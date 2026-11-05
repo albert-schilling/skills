@@ -4,10 +4,19 @@
 // broken config never lets test edits through.
 import { readFileSync } from "node:fs";
 import { checkToolCall, configPath, readTestFiles } from "../test-files.mjs";
+import { spawnSync } from "node:child_process";
 
-// Claude Code sets it for hooks; the hook's own path may lie outside the project (a symlinked skill).
-const root = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
+// The repository the call works in: the git worktree holding the event's `cwd`, which in a Factory
+// run is the issue's worktree, not the checkout the session started in. Falls back to the project.
+function projectRoot(cwd) {
+  const fallback = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
+  if (typeof cwd !== "string") return fallback;
+  const git = spawnSync("git", ["-C", cwd, "rev-parse", "--show-toplevel"], { encoding: "utf8" });
+  return git.status === 0 ? git.stdout.trim() : fallback;
+}
+
 const input = JSON.parse(readFileSync(0, "utf8"));
+const root = projectRoot(input.cwd);
 
 let testFiles;
 try {

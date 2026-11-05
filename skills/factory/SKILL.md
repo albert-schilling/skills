@@ -117,7 +117,7 @@ Run `config.validate` in the worktree. On failure, send the output to `factory-i
 
 Size: count the changed lines from the base; above `config.maxChangedLines`, say so in the pull request and why it wasn't split.
 
-Risk Tier: work it out once more. If it rose to High after the security review was skipped, run it now, as in Review.
+Risk Tier: work it out once more. If it rose to High after the security review was skipped, run it now, as in Review; when it commits fixes, run Verify again, so the pull request and its evidence describe the final commits.
 
 Push the branch and open the pull request against the default branch, titled like the issue. Write its body with the `factory-pull-request` skill. Leave merging to a person: don't merge, approve or enable auto-merge.
 

@@ -101,13 +101,17 @@ describe("the implementer's test-file hook (Claude Code)", () => {
       "git restore -- src",
       "git checkout .",
       "mv src elsewhere",
+      "rm -rf src/*",
+      "rm src/*.ts",
+      "cp payload.json src/fixtures/",
+      "mv new.json src/fixtures",
     ]) {
       it(`denies ${JSON.stringify(command)}, which reaches a test file through a directory`, () => {
         assert.ok(denied(runHook("Bash", { command })));
       });
     }
 
-    for (const command of ["rm -rf dist", "cp build.ts src/", "cd src && rm story.ts", "cd dist && rm -r ."]) {
+    for (const command of ["rm -rf dist", "cp build.ts src/", "cd src && rm story.ts", "cd dist && rm -r .", "rm dist/*.js"]) {
       it(`allows ${JSON.stringify(command)}, which reaches no test file`, () => {
         assert.equal(runHook("Bash", { command }).decision, undefined);
       });
@@ -118,6 +122,27 @@ describe("the implementer's test-file hook (Claude Code)", () => {
 
       assert.match(result.decision.hookSpecificOutput.permissionDecisionReason, /can't follow/);
     });
+  });
+
+  it("matches paths from the worktree the call runs in, not the checkout the session started in", () => {
+    const repo = join(project, "repo");
+    const worktree = join(project, "worktree");
+    const git = (...args) => spawnSync("git", args, { cwd: repo, encoding: "utf8" });
+    mkdirSync(join(repo, ".agents"), { recursive: true });
+    writeFileSync(join(repo, ".agents/factory.json"), JSON.stringify({ testFiles: ["src/**/*.test.ts"] }));
+    git("init", "-q");
+    git("add", "-A");
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "init");
+    git("worktree", "add", "-q", worktree);
+    mkdirSync(join(worktree, "src"));
+
+    const result = spawnSync(process.execPath, [hook], {
+      input: JSON.stringify({ cwd: join(worktree, "src"), tool_name: "Write", tool_input: { file_path: join(worktree, "src/a.test.ts") } }),
+      env: { ...process.env, CLAUDE_PROJECT_DIR: repo },
+      encoding: "utf8",
+    });
+
+    assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, "deny");
   });
 
   it("blocks every call when the config can't be read, rather than letting edits through", () => {

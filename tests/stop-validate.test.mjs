@@ -49,6 +49,27 @@ describe("the Stop hook (Claude Code)", () => {
     assert.equal(runHook({ validate: "test -f marker" }).status, 0);
   });
 
+  it("validates the worktree the session works in, not the checkout it started in", () => {
+    const repo = join(project, "repo");
+    const worktree = join(project, "worktree");
+    const git = (...args) => spawnSync("git", args, { cwd: repo, encoding: "utf8" });
+    mkdirSync(join(repo, ".agents"), { recursive: true });
+    writeFileSync(join(repo, ".agents/factory.json"), JSON.stringify({ validate: "test ! -f broken" }));
+    git("init", "-q");
+    git("add", "-A");
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "init");
+    git("worktree", "add", "-q", worktree);
+    writeFileSync(join(worktree, "broken"), "");
+
+    const result = spawnSync(process.execPath, [hook], {
+      input: JSON.stringify({ hook_event_name: "Stop", cwd: worktree }),
+      env: { ...process.env, CLAUDE_PROJECT_DIR: repo },
+      encoding: "utf8",
+    });
+
+    assert.equal(result.status, 2);
+  });
+
   it("keeps the turn going when the config has no validate command", () => {
     const result = runHook({});
 

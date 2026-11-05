@@ -7,7 +7,7 @@
 // looking inside directories they remove or restore; the standards reviewer's cheat detection
 // catches the rest.
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { isAbsolute, join, relative, resolve } from "node:path";
+import { basename, isAbsolute, join, relative, resolve } from "node:path";
 import { globToRegExp } from "./glob.mjs";
 
 export const configPath = ".agents/factory.json";
@@ -54,15 +54,31 @@ function shellTargets(command, cwd) {
     const inPlace = ["sed", "perl"].includes(program) && args.some((arg) => /^-\w*i/.test(arg));
     const gitWrite = program === "git" && writingGitCommands.has(args[0] ?? "");
     if (writingPrograms.has(program) || inPlace || gitWrite) {
-      const destination = copyingPrograms.has(program) ? args.length - 1 : -1;
-      written.push(...args.map((path, i) => ({ path, recursive: i !== destination })));
+      const paths = args.filter((arg) => !arg.startsWith("-"));
+      const destination = copyingPrograms.has(program) && paths.length > 1 ? paths.at(-1) : undefined;
+      for (const path of paths) {
+        if (path === destination) continue;
+        written.push({ path, recursive: true });
+        // Into a folder, a copy or move lands at the folder plus the source's name.
+        if (destination !== undefined) written.push({ path: join(destination, basename(path)), recursive: true });
+      }
+      if (destination !== undefined) written.push({ path: destination, recursive: false });
     }
     if (written.length === 0) continue;
     if (dir === undefined) return undefined;
     const from = dir;
-    targets.push(...written.map(({ path, recursive }) => ({ path: resolve(from, path), recursive })));
+    targets.push(...written.map(({ path, recursive }) => widen({ path: resolve(from, path), recursive })));
   }
   return targets;
+}
+
+// The shell expands a wildcard the hook can't see, so a path with one stands for its folder up to
+// the first wildcard, with everything below it (`src/*` → all of `src`).
+function widen({ path, recursive }) {
+  const segments = path.split("/");
+  const first = segments.findIndex((segment) => /[*?[]/.test(segment));
+  if (first === -1) return { path, recursive };
+  return { path: segments.slice(0, first).join("/") || "/", recursive: true };
 }
 
 function isDirectory(path) {

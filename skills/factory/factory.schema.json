@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "The Factory's settings for one project (.agents/factory.json)",
+  "description": "Everything the Factory's skills, agents and hooks know about a project. They name nothing of any project's own; they read it from here. `factory-setup` writes the first version.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "codingAgent",
+    "conventions",
+    "glossary",
+    "decisionRecords",
+    "issueTemplate",
+    "setup",
+    "validate",
+    "maxChangedLines",
+    "harnessLog",
+    "labels",
+    "testFiles",
+    "riskTiers"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "codingAgent": {
+      "description": "The coding agent that runs the Factory here. The factory skill reads adapters/<codingAgent>.md for which tool does each action, and factory-setup installs the agents and hooks its way.",
+      "enum": ["claude-code"]
+    },
+    "conventions": {
+      "description": "The entry point to the project's conventions (usually AGENTS.md), which links one topic file per subject. Every phase reads it and the topic files that touch its work.",
+      "type": "string"
+    },
+    "glossary": {
+      "description": "The file that defines the domain's terms. Agents use its terms; a Stop that settles a term is recorded there.",
+      "type": "string"
+    },
+    "decisionRecords": {
+      "description": "Folders or files holding decisions (ADRs, design records, product requirements). The planner reads those an issue cites; a Stop that settles a product or architecture decision is recorded in one.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "issueTemplate": {
+      "description": "The issue template the Factory accepts. Intake refuses an issue that misses one of its `## ` sections or leaves one at its placeholder; issues the Factory files follow it.",
+      "type": "string"
+    },
+    "setup": {
+      "description": "The command that prepares a fresh worktree (installing dependencies, for example), run once per run. Empty when nothing is needed.",
+      "type": "string"
+    },
+    "validate": {
+      "description": "The one command that runs what CI runs. The Stop hook runs it at the end of every turn; the implementer and the verify phase finish only when it passes.",
+      "type": "string",
+      "minLength": 1
+    },
+    "maxChangedLines": {
+      "description": "The size of one pull request in changed lines. The planner proposes a split above it.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "harnessLog": {
+      "description": "The file with the harness log's two tables: entries (what went wrong and the harness change) and Factory runs. The retro adds to both.",
+      "type": "string"
+    },
+    "labels": {
+      "description": "The issue labels the Factory uses. They must exist in the repository; factory-setup creates them.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ready", "needsInfo", "friction", "preExisting"],
+      "properties": {
+        "ready": { "description": "A person has checked the issue; only issues with it enter the Factory, and only a person applies it.", "type": "string" },
+        "needsInfo": { "description": "Intake stopped on the issue: a section or an answer is missing.", "type": "string" },
+        "friction": { "description": "A papercut an agent hit but didn't fix, filed by the retro once the person agrees.", "type": "string" },
+        "preExisting": { "description": "A problem a reviewer found in code the pull request didn't change.", "type": "string" }
+      }
+    },
+    "testFiles": {
+      "description": "Globs, from the project root, of every file whose change can make a failing test pass: tests, test helpers, fixtures, snapshots, and the test runner's config and setup files. The test-writer changes only these; the implementer's hook denies edits to them.",
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "riskTiers": {
+      "description": "Rules that set the minimum Risk Tier from the changed paths. For each path the first rule whose globs match sets its tier, so list high before low and end with a catch-all; the change takes its paths' highest tier. High: infrastructure, CI workflows, authentication, the database schema and migrations, prompts and content filters, personal data, outgoing messages, and the Factory's own files. Low: docs, test-only changes, tooling with no runtime effect. Medium: the rest.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tier", "paths"],
+        "properties": {
+          "tier": { "enum": ["high", "medium", "low"] },
+          "paths": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        }
+      }
+    }
+  }
+}

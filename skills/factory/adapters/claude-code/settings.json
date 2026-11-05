@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/skills/factory/hooks/claude-code/stop-validate.mjs",
+            "timeout": 1200
+          }
+        ]
+      }
+    ]
+  }
+}

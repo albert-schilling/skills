@@ -1,0 +1,24 @@
+{
+  "$schema": "skills/factory/factory.schema.json",
+  "codingAgent": "claude-code",
+  "conventions": "AGENTS.md",
+  "glossary": "GLOSSARY.md",
+  "decisionRecords": ["docs/adr/"],
+  "issueTemplate": ".github/ISSUE_TEMPLATE/task.md",
+  "setup": "",
+  "validate": "./scripts/validate.sh",
+  "maxChangedLines": 300,
+  "harnessLog": "docs/harness-log.md",
+  "labels": {
+    "ready": "ready-for-agent",
+    "needsInfo": "needs-info",
+    "friction": "friction",
+    "preExisting": "pre-existing"
+  },
+  "testFiles": [],
+  "riskTiers": [
+    { "tier": "high", "paths": [".github/workflows/**", ".agents/**", ".claude/**"] },
+    { "tier": "low", "paths": ["docs/**", "**/*.md", ".github/ISSUE_TEMPLATE/**"] },
+    { "tier": "medium", "paths": ["**"] }
+  ]
+}

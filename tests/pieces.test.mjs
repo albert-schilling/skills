@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { describe, it } from "node:test";
-import { parseAgent } from "../skills/factory-setup/scripts/install.mjs";
+import { parseAgent } from "../scripts/render-adapters.mjs";
 
 const skillsDir = resolve(import.meta.dirname, "../skills");
 const read = (path) => readFileSync(join(skillsDir, path), "utf8");
@@ -77,7 +77,7 @@ describe("the phase agents", () => {
 });
 
 describe("the factory skill", () => {
-  const text = filesBelow("factory").filter((file) => file.endsWith(".md") && !file.includes("/agents/")).map(read).join("\n");
+  const text = filesBelow("factory").filter((file) => file.endsWith(".md") && !file.includes("agents/")).map(read).join("\n");
 
   it("starts each phase agent, and no other", () => {
     const named = new Set(text.match(/\bfactory-[a-z-]+[a-z]/g));
@@ -88,7 +88,7 @@ describe("the factory skill", () => {
 
   it("has an adapter for every coding agent the schema allows", () => {
     for (const agent of schema.properties.codingAgent.enum) {
-      assert.ok(existsSync(join(skillsDir, "factory/adapters", `${agent}.md`)), agent);
+      assert.ok(existsSync(join(skillsDir, "factory/adapters", agent, "README.md")), agent);
     }
   });
 });
@@ -130,7 +130,7 @@ describe("every piece", () => {
 
   it("names Claude Code's tools only in its adapter and installer", () => {
     const tools = /\b(AskUserQuestion|SendMessage|EnterWorktree|ExitWorktree|subagent_type)\b|`Agent` tool|the Agent tool/;
-    const allowed = ["factory/adapters/claude-code.md", "factory-setup/SKILL.md"];
+    const allowed = ["factory/adapters/claude-code/README.md", "factory-setup/SKILL.md"];
 
     assert.deepEqual(textFiles.filter((file) => !allowed.includes(file) && tools.test(read(file))), []);
   });

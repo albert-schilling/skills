@@ -14,8 +14,8 @@ How the Factory's actions map to Claude Code's tools, and where `factory-setup` 
 
 ## Where the pieces are
 
-- The phase agents are `.claude/agents/factory-*.md`. `factory-setup` renders them from this skill's `agents/` folder; edit neither copy by hand.
-- The implementer's PreToolUse hook and the project's Stop hook run the scripts in this skill's `hooks/claude-code/` folder.
+- The phase agents are `.claude/agents/factory-*.md`, copied by `factory-setup` from [`agents/`](agents/) next to this file. Those are rendered from the Factory's neutral agent files (`../../agents/`) in the repository the Factory comes from; edit neither copy in a project.
+- The implementer's PreToolUse hook (in its agent file) and the project's Stop hook ([`settings.json`](settings.json), merged into `.claude/settings.json`) run the scripts in the Factory's `hooks/claude-code/` folder, at `.claude/skills/factory/`. Claude Code finds installed skills there whether `npx skills` copied them or linked them from `.agents/skills/`.
 
 ## Gotchas
 

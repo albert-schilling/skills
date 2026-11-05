@@ -15,7 +15,7 @@ Read `.agents/factory.json` first. Everything about this repository comes from i
 
 ## Your coding agent
 
-This skill names actions, not tools. Read [`adapters/`](adapters/)`<config.codingAgent>.md` before anything else: it says which of your tools does each action, and where the phase agents and hooks live.
+This skill names actions, not tools. Read `adapters/<config.codingAgent>/README.md` (in this skill's folder, for example [`adapters/claude-code/README.md`](adapters/claude-code/README.md)) before anything else: it says which of your tools does each action, and where the phase agents and hooks live.
 
 - **Start an agent**: run a `factory-*` phase agent with a prompt, wait for it, and get its final message.
 - **Continue an agent**: send a follow-up to an agent you started, so it keeps its context.

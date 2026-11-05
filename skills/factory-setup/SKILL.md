@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 You set up the Factory in the repository you're working in, so that `/factory <issue>` can run here. The person should have nothing to do by hand: find out what you can from the repository, ask about the rest, and do every step yourself. Run again later, this skill brings the installed agents and hooks up to date and changes nothing the project owns without asking.
 
-The files you work with sit next to this skill: [`scripts/install.mjs`](scripts/install.mjs) does the mechanical part, [`templates/`](templates/) holds the starting files, and the Factory's own skill (`../factory/`) holds the config schema `factory.schema.json`, the agents and the hooks.
+This is a prompt-driven skill, not a script: explore, say what you found, confirm with the person, then write. Next to this skill, [`templates/`](templates/) holds the starting files, at the paths they get in a project. The Factory's own skill (`../factory/`) holds the config schema `factory.schema.json` and, for each coding agent, an adapter folder (`adapters/<agent>/`) with the files to install.
 
 ## 1. The coding agent
 
@@ -39,25 +39,35 @@ Ask, in one round, only what the repository didn't answer, each question with yo
 
 ## 4. Scaffold and configure
 
-Run `node <this skill>/scripts/install.mjs --project <repository root> --scaffold`. It copies each template the project lacks and keeps every file that exists; it prints which.
+For each file in [`templates/`](templates/) (including `templates/.agents/` and `templates/.github/`), copy it to the same path in the project when the project has no file there. Never overwrite one; note which you created and which you kept. Make `scripts/validate.sh` executable.
 
-Then edit what it created, and nothing it kept unless the person agreed:
+Then edit what you created, and nothing you kept unless the person agreed:
 
 - `.agents/factory.json`: every key, from steps 2 and 3. Point `$schema` at `factory.schema.json` relative to the config (`skills/factory/factory.schema.json` when the skills are in `.agents/skills/`). Put the paths you found into the High rule of `riskTiers`, before the low and catch-all rules.
-- `AGENTS.md`: when the project had one, the script kept it. Add the template's _Conventions_ section to it instead, adjusted to the project's `validate` command, and link the project's glossary and decision records under _Where decisions live_ if it doesn't yet. When it had none, fill in the template's placeholders. When `CLAUDE.md` exists and isn't a link to `AGENTS.md`, make sure it links to it.
+- `AGENTS.md`: when the project had one, add the template's _Conventions_ section to it instead, adjusted to the project's `validate` command, and link the project's glossary and decision records under _Where decisions live_ if it doesn't yet. When it had none, fill in the template's placeholders. When `CLAUDE.md` exists and isn't a link to `AGENTS.md`, make sure it links to it.
 - The conventions files: adjust their commands and paths to the project; leave the rules as they are. Stack-specific conventions come later, when a run stops on them.
 - `docs/harness-log.md`: when the project already had a harness log, add the _Factory runs_ section from the template if it lacks it.
 - `scripts/validate.sh`: when `validate` is another command, delete it.
 
-Then run the script with `--check`: it lists what the config lacks against `factory.schema.json` (`configProblems`). Fix each problem before you go on.
+Then check `.agents/factory.json` against `factory.schema.json`, and fix each problem before you go on:
+
+- every key in `required` is there, and no key the schema doesn't define;
+- `codingAgent` is one the schema lists, and `validate` is a command;
+- `testFiles` has at least one glob, and matches the test files that exist (`git ls-files`);
+- each `riskTiers` rule has a tier and paths, and the last one matches every path (`**`).
 
 ## 5. Install for the coding agent
 
-Run `node <this skill>/scripts/install.mjs --project <repository root> --agent <codingAgent>`. For `claude-code` it renders the phase agents into `.claude/agents/factory-*.md`, adds the Stop hook to `.claude/settings.json` (keeping the other settings), and adds `.claude/worktrees/` to `.gitignore`. It checks the config again; `configProblems` must be empty. The hooks need Node 22 or newer; check `node --version`, and tell the person when it is older.
+For `claude-code`, from `../factory/adapters/claude-code/`:
 
-Then check that the Stop hook passes: run `validate` once yourself. When it fails, the Stop hook will keep every turn going, so fix what fails or ask the person.
+- **Agents**: copy each file in `agents/` to `.claude/agents/`, replacing an earlier copy. Delete any `.claude/agents/factory-*.md` whose first frontmatter line says it was rendered by the Factory but that `agents/` no longer has; leave other agent files alone.
+- **Stop hook**: merge `settings.json` into `.claude/settings.json`, creating it if needed. Keep every other setting and hook; replace an earlier Factory Stop hook (a command naming `stop-validate.mjs`) rather than adding a second one.
+- **Skills path**: the agents and hooks name `.claude/skills/factory/` and `.claude/skills/factory-result/`. Check that both exist (they do when `npx skills` installed for Claude Code); when the skills are only in `.agents/skills/`, link `.claude/skills/<name>` to them.
+- **Worktrees**: add `.claude/worktrees/` to `.gitignore` if it isn't there.
 
-Read the adapter's _Gotchas_ (`../factory/adapters/<codingAgent>.md`) and tell the person the ones that affect them now: for Claude Code, that agent hooks need the folder's workspace trust to have been accepted.
+The hooks need Node 22 or newer: check `node --version`, and tell the person when it is missing or older. Then check that the Stop hook passes: run `validate` once yourself. When it fails, the Stop hook will keep every turn going, so fix what fails or ask the person.
+
+Read the adapter's _Gotchas_ (`../factory/adapters/<codingAgent>/README.md`) and tell the person the ones that affect them now: for Claude Code, that agent hooks need the folder's workspace trust to have been accepted.
 
 ## 6. Labels
 

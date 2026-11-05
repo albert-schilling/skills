@@ -19,7 +19,7 @@ After `npx skills update`, run `/factory-setup` again so the installed agents an
 Requirements:
 
 - A coding agent the Factory has an adapter for: today, Claude Code. With another one, `/factory-setup` says what's missing, can set up everything else, and files an issue here.
-- Node 22 or newer, for the hooks and the installer.
+- Node 22 or newer, for the hooks.
 - A GitHub repository, with the `gh` CLI for reading and writing issues and pull requests.
 
 ## How a run works
@@ -48,9 +48,9 @@ Any phase can stop with numbered questions instead of guessing. The orchestrator
 | [`factory`](skills/factory/SKILL.md)                                 | The orchestrator: `/factory <issue>`. Also holds [the Stops](skills/factory/stops.md), the agents, the hooks, the adapters and the config schema. |
 | [`factory-result`](skills/factory-result/SKILL.md)                   | The result every phase agent ends with: `done` with its artifact, or `blocked` with questions and a recommended answer for each; plus friction. |
 | [`factory-pull-request`](skills/factory-pull-request/SKILL.md)       | The body of the pull requests the Factory opens.                                                                                                 |
-| [`factory-setup`](skills/factory-setup/SKILL.md)                     | `/factory-setup`: installs and updates the Factory in a repository, with [its installer](skills/factory-setup/scripts/install.mjs) and [starting files](skills/factory-setup/templates/). |
+| [`factory-setup`](skills/factory-setup/SKILL.md)                     | `/factory-setup`: installs and updates the Factory in a repository, from its [starting files](skills/factory-setup/templates/) and the coding agent's adapter. Instructions only; no script. |
 
-The phase agents, in [`skills/factory/agents/`](skills/factory/agents/), are written once in a neutral format (a model tier, an effort, read or write access, and the hooks they need). `factory-setup` renders them for the coding agent in use.
+The phase agents, in [`skills/factory/agents/`](skills/factory/agents/), are written once in a neutral format (a model tier, an effort, read or write access, and the hooks they need). [`scripts/render-adapters.mjs`](scripts/render-adapters.mjs), in this repository only, renders them into each coding agent's format under `skills/factory/adapters/<agent>/`, and `factory-setup` copies those into the project.
 
 | Agent                        | Phase                                                      | Model tier, effort |
 | ---------------------------- | ---------------------------------------------------------- | ------------------ |
@@ -86,7 +86,7 @@ Each project has `.agents/factory.json`; [`factory.schema.json`](skills/factory/
 | `testFiles`       | Globs of every file whose change can make a failing test pass.                                 |
 | `riskTiers`       | Path rules for the minimum Risk Tier; the first matching rule sets a path's tier.              |
 
-The project owns everything `factory-setup` writes into it (the config, the conventions, the issue template, the harness log) and grows it from its runs. The Factory's own files stay as installed; a retro proposes changes to them as issues here. For Claude Code's gotchas (workspace trust for agent hooks, the `skills:` preload), see [its adapter](skills/factory/adapters/claude-code.md).
+The project owns everything `factory-setup` writes into it (the config, the conventions, the issue template, the harness log) and grows it from its runs. The Factory's own files stay as installed; a retro proposes changes to them as issues here. For Claude Code's gotchas (workspace trust for agent hooks, the `skills:` preload), see [its adapter](skills/factory/adapters/claude-code/README.md).
 
 ## Terms
 
@@ -97,9 +97,9 @@ The project owns everything `factory-setup` writes into it (the config, the conv
 
 ## Working on the Factory
 
-The tests check the pieces, not a project, so they run only here: `node --test`, also in CI. Nothing to install.
+Change the neutral agent files in `skills/factory/agents/`, then run `node scripts/render-adapters.mjs` to update the adapters' copies.
 
-They check that the hooks behave, that the installer renders agents and hooks and keeps a project's files, and that the pieces name no project, call no skill from outside this repository, name a coding agent's tools only in its adapter, and refer only to config keys and files that exist.
+The tests check the pieces, not a project, so they run only here: `node --test`, also in CI. Nothing to install. They check that the hooks behave, that the adapters' rendered files are up to date and correct, and that the pieces name no project, call no skill from outside this repository, name a coding agent's tools only in its adapter, and refer only to config keys and files that exist.
 
 ## License
 

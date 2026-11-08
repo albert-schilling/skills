@@ -65,7 +65,7 @@ For `claude-code`, from `../factory/adapters/claude-code/`:
 - **Skills path**: the agents and hooks name `.claude/skills/factory/` and `.claude/skills/factory-result/`. Check that both exist (they do when `npx skills` installed for Claude Code); when the skills are only in `.agents/skills/`, link `.claude/skills/<name>` to them.
 - **Worktrees**: add `.claude/worktrees/` to `.gitignore` if it isn't there.
 
-The hooks need Node 22 or newer: check `node --version`, and tell the person when it is missing or older. Then check that the Stop hook passes: run `validate` once yourself. When it fails, the Stop hook will keep every turn going, so fix what fails or ask the person.
+The hooks need Node 22 or newer: check `node --version`, and tell the person when it is missing or older. Then check that the Stop hook passes: run `validate` once yourself. When it fails, the Stop hook will keep every turn going for one more try, so fix what fails or ask the person.
 
 Read the adapter's _Gotchas_ (`../factory/adapters/<codingAgent>/README.md`) and tell the person the ones that affect them now: for Claude Code, that agent hooks need the folder's workspace trust to have been accepted.
 

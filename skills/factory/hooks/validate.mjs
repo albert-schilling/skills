@@ -3,6 +3,7 @@
 // plain text. A coding agent's wrapper (hooks/<agent>/stop-validate.mjs) decides what the agent
 // sees.
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { configPath } from "./test-files.mjs";
@@ -25,4 +26,19 @@ export function runValidate(root) {
   // Tools may still colour their output; the agent reads plain text.
   const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.replace(/\x1b\[[0-9;]*m/g, "");
   return { ok: result.status === 0, command, output };
+}
+
+/**
+ * What makes two failures the same, for telling whether an agent's try changed anything: the
+ * output's lines without durations and percentages, in any order, since tools that run tasks in
+ * parallel print them in a different order each time.
+ */
+export function failureFingerprint(output) {
+  const lines = output
+    .split("\n")
+    .map((line) => line.replace(/\d+(?:\.\d+)?\s?(?:ms|s|m|h|%)(?![a-z])/gi, "#").trim())
+    .filter(Boolean);
+  return createHash("sha256")
+    .update([...new Set(lines)].sort().join("\n"))
+    .digest("hex");
 }

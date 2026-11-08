@@ -6,7 +6,7 @@
 
 ## The Stop hook
 
-At the end of every agent turn, the Stop hook runs `validate` from `.agents/factory.json`. It prints nothing when it passes; when it fails, the agent gets the output and the turn goes on until it passes.
+At the end of every agent turn, the Stop hook runs `validate` from `.agents/factory.json`. It prints nothing when it passes; when it fails, the agent gets the output and the turn goes on. If the agent's try ends with the same failure, the turn ends anyway and you see the failure: some can't be fixed from the agent's machine.
 
 ## The Factory
 

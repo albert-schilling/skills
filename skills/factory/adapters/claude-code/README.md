@@ -21,4 +21,5 @@ How the Factory's actions map to Claude Code's tools, and where `factory-setup` 
 
 - Claude Code skips an agent's frontmatter hooks until the folder's workspace trust dialog has been accepted, and logs that only to the debug log; a fresh cloud container hasn't accepted it. Check a hook with `--debug`, or by passing it through `--settings`.
 - An agent's `skills:` preload reaches it only when it runs as a sub-agent; `claude --agent <name>` starts it without them, which is why each agent's instructions say where to read the result format.
+- The Stop hook blocks a turn while `validate` fails, but when the stop after a block (`stop_hook_active`) fails the same way, it lets the turn end and shows the failure to the person in a `systemMessage`. It keeps the last failure per session in the system's temp folder. Without that, a failure the agent can't fix repeats the whole `validate` run until Claude Code overrides the hook after nine blocks.
 - A git worktree inside the repository holds a second copy of every file. Tools that scan the whole tree (formatters, monorepo tools) see each file twice unless `.claude/worktrees/` is in `.gitignore`.

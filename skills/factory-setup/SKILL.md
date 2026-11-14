@@ -60,8 +60,10 @@ Then check `.agents/factory.json` against `factory.schema.json`, and fix each pr
 
 For `claude-code`, from `../factory/adapters/claude-code/`:
 
-- **Agents**: copy each file in `agents/` to `.claude/agents/`, replacing an earlier copy. Delete any `.claude/agents/factory-*.md` whose first frontmatter line says it was rendered by the Factory but that `agents/` no longer has; leave other agent files alone.
+- **Before replacing anything**: read `installed.version` from `.agents/factory.json` (the previous version, absent on a first setup) and keep the old agent files and Stop hook entry to compare with. Afterwards, for the report, say what changed between the two versions: agents added, removed or changed, and whether the Stop hook changed. The skills' own changes are in the repository the Factory was installed from (`source` in `skills-lock.json`).
+- **Agents**: copy each file in `agents/` to `.claude/agents/`, replacing an earlier copy, and add the line `# Installed by factory-setup from Factory version <version>` right after the "Rendered from" comment line (replacing a previous such line). `<version>` is the `computedHash` of the `factory` skill in `skills-lock.json`; without that entry, skip the version steps here and in the record below. Delete any `.claude/agents/factory-*.md` whose first frontmatter line says it was rendered by the Factory but that `agents/` no longer has; leave other agent files alone.
 - **Stop hook**: merge `settings.json` into `.claude/settings.json`, creating it if needed. Keep every other setting and hook. When a Stop hook entry already runs `stop-validate.mjs`, replace that one entry, leaving the other hooks in its group, rather than adding a second one.
+- **Record the install**: set `installed` in `.agents/factory.json` (the template has it empty) to `{ "version": "<version>", "files": [...] }`, listing every agent file you installed and `.claude/settings.json` (the Stop hook is found by its `stop-validate.mjs` command). This is the one place the installed version is kept; `/factory` compares it with the skill's current hash.
 - **Skills path**: the agents and hooks name `.claude/skills/factory/` and `.claude/skills/factory-result/`. Check that both exist (they do when `npx skills` installed for Claude Code); when the skills are only in `.agents/skills/`, link `.claude/skills/<name>` to them.
 - **Worktrees**: add `.claude/worktrees/` to `.gitignore` if it isn't there.
 
@@ -80,4 +82,4 @@ The repository the Factory was installed from is in `skills-lock.json` (its `sou
 
 ## 7. Report
 
-Commit the setup as one `harness:` commit when the person agrees, and list what you did: the files created, the files you changed and kept, the labels, the commands the person still has to run (only when you couldn't run them), and how to start: label an issue `config.labels.ready`, then `/factory <issue>`. Run this skill again after updating the Factory's skills (`npx skills update`), so the agents and hooks match them.
+Commit the setup as one `harness:` commit when the person agrees, and list what you did: the files created, the files you changed and kept, the labels, the commands the person still has to run (only when you couldn't run them), and how to start: label an issue `config.labels.ready`, then `/factory <issue>`. Include what changed between the previous and the new version (step 5). Run this skill again after updating the Factory's skills (`npx skills update`), so the agents and hooks match them.

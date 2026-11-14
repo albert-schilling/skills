@@ -78,6 +78,7 @@ Each project has `.agents/factory.json`; [`factory.schema.json`](skills/factory/
 | `glossary`        | The file defining the domain's terms.                                                          |
 | `decisionRecords` | Where decisions live (ADRs and other records).                                                 |
 | `issueTemplate`   | The issue template intake checks issues against.                                               |
+| `installed`       | The Factory version and files `factory-setup` installed; `/factory` refuses to run when stale. |
 | `setup`           | What a fresh worktree needs before the checks run, or empty.                                   |
 | `validate`        | The one command that runs what CI runs; the Stop hook runs it after every turn.                |
 | `maxChangedLines` | The size of one pull request.                                                                  |

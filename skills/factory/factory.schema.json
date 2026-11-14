@@ -77,6 +77,16 @@
       "items": { "type": "string" },
       "minItems": 1
     },
+    "installed": {
+      "description": "What `factory-setup` installed, and from which version of the Factory. `/factory` compares `version` with the `factory` skill's current one and refuses to start when they differ. Written by `factory-setup`; never edit by hand.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "files"],
+      "properties": {
+        "version": { "description": "The `computedHash` of the `factory` skill in `skills-lock.json` when setup last ran.", "type": "string" },
+        "files": { "description": "The files setup installed or merged into, from the project root: each agent file, and `.claude/settings.json` for the Stop hook. Each agent file also carries the version in its first frontmatter comment.", "type": "array", "items": { "type": "string" } }
+      }
+    },
     "riskTiers": {
       "description": "Rules that set the minimum Risk Tier from the changed paths. For each path the first rule whose globs match sets its tier, so list high before low and end with a catch-all; the change takes its paths' highest tier. High: infrastructure, CI workflows, authentication, the database schema and migrations, prompts and content filters, personal data, outgoing messages, and the Factory's own files. Low: docs, test-only changes, tooling with no runtime effect. Medium: the rest.",
       "type": "array",

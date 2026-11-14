@@ -62,12 +62,15 @@ For `claude-code`, from `../factory/adapters/claude-code/`:
 
 - **Agents**: copy each file in `agents/` to `.claude/agents/`, replacing an earlier copy. Delete any `.claude/agents/factory-*.md` whose first frontmatter line says it was rendered by the Factory but that `agents/` no longer has; leave other agent files alone.
 - **Stop hook**: merge `settings.json` into `.claude/settings.json`, creating it if needed. Keep every other setting and hook. When a Stop hook entry already runs `stop-validate.mjs`, replace that one entry, leaving the other hooks in its group, rather than adding a second one.
-- **Skills path**: the agents and hooks name `.claude/skills/factory/` and `.claude/skills/factory-result/`. Check that both exist (they do when `npx skills` installed for Claude Code); when the skills are only in `.agents/skills/`, link `.claude/skills/<name>` to them.
+- **Skills path**: the agents and hooks name `.claude/skills/factory/` and `.claude/skills/factory-result/`. Check that both exist (they do when `npx skills` installed for Claude Code); when the skills are only in `.agents/skills/`, link `.claude/skills/<name>` to them. Use relative links only (for example `ln -s ../../.agents/skills/<name> .claude/skills/<name>`), so the hooks find their scripts in every clone, worktree, CI run and cloud session. Then check the links that are already there, `.claude/skills` itself and each entry in it (`find .claude/skills -maxdepth 1 -type l`, then `readlink` each one):
+  - When a link is absolute and its target lies inside the repository, replace it with the relative link to the same target (`.claude/skills` to `../.agents/skills`, for example), and report each one you changed.
+  - When the absolute target lies outside the repository (another person's machine, for example), don't guess: report the link and ask the person what it should point to.
+  - After replacing a link, check that `.claude/skills/factory/hooks/claude-code/stop-validate.mjs` resolves (`test -f`), and tell the person when it doesn't.
 - **Worktrees**: add `.claude/worktrees/` to `.gitignore` if it isn't there.
 
 The hooks need Node 22 or newer: check `node --version`, and tell the person when it is missing or older. Then check that the Stop hook passes: run `validate` once yourself. When it fails, the Stop hook will keep every turn going for one more try, so fix what fails or ask the person.
 
-Read the adapter's _Gotchas_ (`../factory/adapters/<codingAgent>/README.md`) and tell the person the ones that affect them now: for Claude Code, that agent hooks need the folder's workspace trust to have been accepted.
+Read the adapter's _Gotchas_ (`../factory/adapters/<codingAgent>/README.md`) and tell the person the ones that affect them now: for Claude Code, that agent hooks need the folder's workspace trust to have been accepted, and that `npx skills` can replace the links in `.claude/skills` with absolute ones, so setup is to be run again after installing or updating skills.
 
 ## 6. Labels
 

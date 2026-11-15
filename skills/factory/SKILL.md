@@ -125,19 +125,22 @@ Push the branch and open the pull request against the default branch, titled lik
 
 ### 12. Retro
 
-Review the run: the run log, every result, the Stops, the review findings. Propose to the person, as three numbered lists:
+Start `factory-retro` in a fresh context. Its prompt names the issue, the run log comment, the pull request and `config.harnessLog`, and nothing from your own memory of the run: it judges the run from the record. Put its proposals to the person as it returns them, in these numbered lists:
 
 1. **Harness log entries** for `config.harnessLog`'s entries table: what an agent got wrong or needed to be told, and the harness change that prevents it.
-2. **Harness changes**: conventions, gotchas and checks for patterns the run used that aren't described yet, or that cost a Stop or a review finding. Prefer a check over a written rule. Say for each whether it belongs to this repository (its config, conventions or checks) or to the Factory itself (this skill, the agents, the hooks).
-3. **Friction**: the friction from every result, deduplicated, each as a would-be issue.
+2. **Changes to this repository**: conventions, gotchas and checks for patterns the run used that aren't described yet, or that cost a Stop or a review finding.
+3. **Changes to the Factory itself** (this skill, the agents, the hooks), kept apart from list 2.
+4. **Friction**: the friction from every result, deduplicated, each as a would-be issue.
+
+Add anything the record shows that the retro missed, labelled as yours. A `blocked` result is a Stop, as in any phase.
 
 Act only on what the person accepts:
 
-- Small harness changes to this repository and the accepted log entries: `harness:` commits in this pull request.
-- Bigger harness changes to this repository: issues from `config.issueTemplate`.
-- Changes to the Factory itself: never edit its installed files, which the next update replaces. Open an issue in the repository the Factory was installed from (`skills-lock.json` names it), with what went wrong and the change you propose.
+- Small changes to this repository and the accepted log entries: `harness:` commits in this pull request.
+- Bigger changes to this repository: issues from `config.issueTemplate`.
+- Changes to the Factory itself: never edit its installed files, which the next update replaces. For each accepted one, search that repository's issues first (open and closed); file the rest in the repository the Factory was installed from (`skills-lock.json` names it), with what went wrong and the change proposed.
 - Friction: search the issues for each first (open and closed); file the rest labelled `config.labels.friction`.
 
-Fill in the run's row in the Factory runs table of `config.harnessLog`, following the column definitions above it; ask the person for their review minutes. Commit it as `harness:`.
+Fill in the run's row in the Factory runs table of `config.harnessLog` from the retro's proposed row, following the column definitions above it; ask the person for their review minutes. Commit it as `harness:`.
 
 When the retro changed more than the harness log, the reviewed change is no longer what goes out: run one more Review round on those commits, work out the Risk Tier again (with the security review if it is now High), and run `config.validate`. Push, and update the pull request's Risk Tier, Review and Evidence to the final commits. Update the run log to `retro done`, leave the worktree, and end with the pull request's link and what the person does next.

@@ -22,6 +22,16 @@ Requirements:
 - Node 22 or newer, for the hooks.
 - A GitHub repository, with the `gh` CLI for reading and writing issues and pull requests.
 
+## From idea to merge
+
+The Factory starts at a ready issue. The work before it uses established skills, which `/factory-setup` recommends (with install commands) when they're missing, and doesn't recommend again when they're installed. Grilling skills such as `grill-with-docs` from [`mattpocock/skills`](https://github.com/mattpocock/skills) should write to the project's `glossary` and `decisionRecords`; setup checks that they do.
+
+1. **Grilling**: stress-test the idea; settled terms and decisions land in the glossary and decision records.
+2. **Spec**: write down what to build.
+3. **`factory-tickets`** (planned, [#6](https://github.com/albert-schilling/skills/issues/6)): split the spec into issues. Until it exists, split by hand.
+4. **The person labels** the issues they accept ready (`ready-for-agent` by default, `labels.ready` in the config).
+5. **`/factory <issue>`**: a run, below, ends in a pull request the person merges.
+
 ## How a run works
 
 `/factory <issue>` runs in the main session and starts one phase agent after another. A person reviews the plan before any code exists, and merges at the end; the agents never merge.

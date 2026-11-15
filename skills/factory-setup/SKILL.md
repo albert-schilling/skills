@@ -85,6 +85,23 @@ Make sure the four labels of `config.labels` exist:
 
 The repository the Factory was installed from is in `skills-lock.json` (its `source`); use it for issues about the Factory itself.
 
-## 7. Report
+## 7. Before the Factory
 
-Commit the setup as one `harness:` commit when the person agrees, and list what you did: the files created, the files you changed and kept, the labels, the commands the person still has to run (only when you couldn't run them), and how to start: label an issue `config.labels.ready`, then `/factory <issue>`. Include what changed between the previous and the new version (step 5, item 4). Run this skill again after updating the Factory's skills (`npx skills update`), so the agents and hooks match them.
+The Factory starts at "a ready issue exists". The work before it (stress-testing the idea, writing a spec) belongs to established skills, which the Factory neither rebuilds nor installs for the person. Find out which are installed: look at the skill folders (`.agents/skills/`, `.claude/skills/`) and `skills-lock.json`.
+
+Candidates, from `mattpocock/skills`:
+
+- `grill-with-docs`: interviews the person about a plan, and writes the terms it settles into the glossary (`GLOSSARY.md` by default) and the decisions into decision records. The Factory reads both. `domain-modeling` does the same; the plain `grilling` primitive writes no documents, so don't recommend it.
+- `to-spec`: turns the settled idea into a spec and publishes it to the issue tracker. It writes no glossary or decision records, so the setting rule below doesn't apply to it.
+
+Splitting a spec into issues is planned as the Factory's `factory-tickets` (issue #6, not yet installed); don't recommend the upstream `to-tickets` instead, and don't name `factory-tickets` in the report until it exists.
+
+For each candidate:
+
+- **Installed**: say so in the report, and don't recommend it again.
+- **Not installed**: recommend it in the report with its install command, `npx skills add mattpocock/skills --skill <name>`, and one line on what it's for. Never install it without asking.
+- **Where it writes**: a skill that writes a glossary or decision records must write to `config.glossary` and `config.decisionRecords`. Read the installed skill for where it writes by default. When that differs from the config, offer to change the config to its path when the project has no such file yet, or else tell the person which setting of the skill (or which move of the files) makes them match. Don't recommend a skill that can't be made to.
+
+## 8. Report
+
+Commit the setup as one `harness:` commit when the person agrees, and list what you did: the files created, the files you changed and kept, the labels, the commands the person still has to run (only when you couldn't run them), a short _Before the Factory_ section (step 7: the skills installed already, and the ones recommended with their install commands), and how to start: label an issue `config.labels.ready`, then `/factory <issue>`. Include what changed between the previous and the new version (step 5, item 4). Run this skill again after updating the Factory's skills (`npx skills update`), so the agents and hooks match them.

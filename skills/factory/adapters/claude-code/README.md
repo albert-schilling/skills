@@ -22,6 +22,18 @@ How the Factory's actions map to Claude Code's tools, and where `factory-setup` 
 - `.claude/agents/factory-*.md`: each gets the line `# Installed by factory-setup from Factory version <version>` after its "Rendered from" frontmatter comment (the first line stays "Rendered from"; stale agents are found by it).
 - `.claude/settings.json`: the Stop hook entry running `stop-validate.mjs`. JSON has no comments, so it isn't marked; `installed.files` lists the file, and the entry is found by its command.
 
+## Install
+
+From this folder, into the project:
+
+- **Agents**: copy each file in `agents/` to `.claude/agents/`, replacing an earlier copy, and add the line `# Installed by factory-setup from Factory version <version>` right after the "Rendered from" comment line (replacing a previous such line). Delete any `.claude/agents/factory-*.md` whose first frontmatter line says it was rendered by the Factory but that `agents/` no longer has; leave other agent files alone.
+- **Stop hook**: merge `settings.json` into `.claude/settings.json`, creating it if needed. Keep every other setting and hook. When a Stop hook entry already runs `stop-validate.mjs`, replace that one entry, leaving the other hooks in its group, rather than adding a second one. List `.claude/settings.json` in `installed.files`; the hook is found by its `stop-validate.mjs` command.
+- **Skills path**: the agents and hooks name `.claude/skills/factory/` and `.claude/skills/factory-result/`. Check that both exist (they do when `npx skills` installed for Claude Code); when the skills are only in `.agents/skills/`, link `.claude/skills/<name>` to them. Use relative links only (for example `ln -s ../../.agents/skills/<name> .claude/skills/<name>`), so the hooks find their scripts in every clone, worktree, CI run and cloud session. Then check the links that are already there, `.claude/skills` itself (`test -L .claude/skills`, then `readlink`) and each entry in it (`find .claude/skills/ -maxdepth 1 -type l`, where the trailing slash makes `find` follow `.claude/skills` when it is a link, then `readlink` each one):
+  - When a link is absolute and its target lies inside the repository, replace it with the relative link to the same target (`.claude/skills` to `../.agents/skills`, for example), and report each one you changed.
+  - When the absolute target lies outside the repository (another person's machine, for example), don't guess: report the link and ask the person what it should point to.
+  - After replacing a link, check that `.claude/skills/factory/hooks/claude-code/stop-validate.mjs` resolves (`test -f`), and tell the person when it doesn't.
+- **Worktrees**: add `.claude/worktrees/` to `.gitignore` if it isn't there.
+
 ## Gotchas
 
 - Claude Code skips an agent's frontmatter hooks until the folder's workspace trust dialog has been accepted, and logs that only to the debug log; a fresh cloud container hasn't accepted it. Check a hook with `--debug`, or by passing it through `--settings`.

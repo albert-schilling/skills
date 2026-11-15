@@ -12,7 +12,7 @@ This is a prompt-driven skill, not a script: explore, say what you found, confir
 
 ## 1. The coding agent
 
-Find out which coding agent runs this session: you know which tools you have (Claude Code has `Agent`, `AskUserQuestion` and hooks in `.claude/settings.json`); when you can't tell, ask. The Factory has an adapter for: `claude-code`.
+Find out which coding agent runs this session: you know which tools you have and which product you run in; when you can't tell, ask. The Factory has an adapter for each folder in `../factory/adapters/` (today: `claude-code`), and `codingAgent` is the folder's name.
 
 For any other coding agent, tell the person what the Factory needs that the adapter would provide: sub-agents with their own instructions and tools, a way to ask the person, a hook before each file edit or shell command (the implementer's test-file guard), and a hook at the end of each turn (`validate`). Offer to continue: the conventions, the config, the templates and the labels work without an adapter, and `/factory` can't run until one exists. If the person continues, set `codingAgent` to the closest supported value, and file an issue in the repository the Factory was installed from (see step 6) titled "Support <coding agent> in the Factory", saying which of those four it has and where its documentation describes them. Without `gh`, add a harness log entry saying the coding agent is unsupported and needs investigating.
 
@@ -61,23 +61,15 @@ Then check `.agents/factory.json` against `factory.schema.json`, and fix each pr
 Install what the adapter provides: `../factory/adapters/<codingAgent>/` and its README, which says what it installs, where, and how to mark each file with the Factory version. These steps hold for every coding agent:
 
 1. **Before replacing anything**: read `installed` from `.agents/factory.json` (absent on a first setup) and keep what the adapter installed earlier, to compare with.
-2. **Install** what the adapter says, replacing earlier copies and leaving files the Factory didn't install alone. Delete each file in the previous `installed.files` that the adapter no longer installs, unless setup merges into it (like `.claude/settings.json`); the adapter's own rule below covers setups with no `installed` yet. Mark each installed file with the Factory version the way the adapter says. `<version>` is the `computedHash` of the `factory` skill in `skills-lock.json`; without an entry for `factory` or `factory-setup`, skip the version steps.
+2. **Install** what the adapter says, replacing earlier copies and leaving files the Factory didn't install alone. Delete each file in the previous `installed.files` that the adapter no longer installs, unless setup merges into it (a shared settings file, for example); the adapter's own rule below covers setups with no `installed` yet. Mark each installed file with the Factory version the way the adapter says. `<version>` is the `computedHash` of the `factory` skill in `skills-lock.json`; without an entry for `factory` or `factory-setup`, skip the version steps.
 3. **Record the install**: set `installed` in `.agents/factory.json` (the template has it empty) to `{ "version": "<version>", "setupVersion": "<the computedHash of the factory-setup skill>", "files": [...] }`, listing every file you installed or merged into. This is the one place the installed version is kept; `/factory` compares it with the skills' current hashes.
 4. **Report what changed** between the previous and the new version: files added, removed or changed. The skills' own changes are in the repository the Factory was installed from (`source` in `skills-lock.json`).
 
-For `claude-code`, from `../factory/adapters/claude-code/`:
+Then follow the adapter's _Install_ section (`../factory/adapters/<codingAgent>/README.md`): it says what to copy or merge where, how to link the skills so the hooks find their scripts, and what to check afterwards.
 
-- **Agents**: copy each file in `agents/` to `.claude/agents/`, replacing an earlier copy, and add the line `# Installed by factory-setup from Factory version <version>` right after the "Rendered from" comment line (replacing a previous such line). Delete any `.claude/agents/factory-*.md` whose first frontmatter line says it was rendered by the Factory but that `agents/` no longer has; leave other agent files alone.
-- **Stop hook**: merge `settings.json` into `.claude/settings.json`, creating it if needed. Keep every other setting and hook. When a Stop hook entry already runs `stop-validate.mjs`, replace that one entry, leaving the other hooks in its group, rather than adding a second one. List `.claude/settings.json` in `installed.files`; the hook is found by its `stop-validate.mjs` command.
-- **Skills path**: the agents and hooks name `.claude/skills/factory/` and `.claude/skills/factory-result/`. Check that both exist (they do when `npx skills` installed for Claude Code); when the skills are only in `.agents/skills/`, link `.claude/skills/<name>` to them. Use relative links only (for example `ln -s ../../.agents/skills/<name> .claude/skills/<name>`), so the hooks find their scripts in every clone, worktree, CI run and cloud session. Then check the links that are already there, `.claude/skills` itself (`test -L .claude/skills`, then `readlink`) and each entry in it (`find .claude/skills/ -maxdepth 1 -type l`, where the trailing slash makes `find` follow `.claude/skills` when it is a link, then `readlink` each one):
-  - When a link is absolute and its target lies inside the repository, replace it with the relative link to the same target (`.claude/skills` to `../.agents/skills`, for example), and report each one you changed.
-  - When the absolute target lies outside the repository (another person's machine, for example), don't guess: report the link and ask the person what it should point to.
-  - After replacing a link, check that `.claude/skills/factory/hooks/claude-code/stop-validate.mjs` resolves (`test -f`), and tell the person when it doesn't.
-- **Worktrees**: add `.claude/worktrees/` to `.gitignore` if it isn't there.
+The hooks need Node 22 or newer: check `node --version`, and tell the person when it is missing or older. Then check that the end-of-turn hook passes: run `validate` once yourself. When it fails, the hook will keep every turn going for one more try, so fix what fails or ask the person.
 
-The hooks need Node 22 or newer: check `node --version`, and tell the person when it is missing or older. Then check that the Stop hook passes: run `validate` once yourself. When it fails, the Stop hook will keep every turn going for one more try, so fix what fails or ask the person.
-
-Read the adapter's _Gotchas_ (`../factory/adapters/<codingAgent>/README.md`) and tell the person the ones that affect them now: for Claude Code, that agent hooks need the folder's workspace trust to have been accepted, and that `npx skills` can replace the links in `.claude/skills` with absolute ones, so setup is to be run again after installing or updating skills.
+Read the adapter's _Gotchas_ and tell the person the ones that affect them now.
 
 ## 6. Labels
 

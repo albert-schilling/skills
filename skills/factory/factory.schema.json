@@ -78,7 +78,7 @@
       "minItems": 1
     },
     "installed": {
-      "description": "What `factory-setup` installed, and from which version of the Factory. `/factory` compares `version` with the `factory` skill's current one and refuses to start when they differ. Written by `factory-setup`; never edit by hand.",
+      "description": "What `factory-setup` installed, and from which version of the Factory. `/factory` compares `version` and `setupVersion` with the current hashes of the `factory` and `factory-setup` skills and refuses to start when either differs. Written by `factory-setup`; never edit by hand.",
       "type": "object",
       "additionalProperties": false,
       "required": ["version", "setupVersion", "files"],

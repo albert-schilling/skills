@@ -84,10 +84,10 @@ The Factory starts at "a ready issue exists". The work before it (stress-testing
 
 Candidates, from `mattpocock/skills`:
 
-- `grill-with-docs`: interviews the person about a plan, and writes the terms it settles into the glossary and the decisions into decision records. The Factory reads both. Its other grilling and domain-modeling skills are fine to use too, but only recommend one that writes to the glossary and the decision records.
-- `to-spec`: turns the settled idea into a spec.
+- `grill-with-docs`: interviews the person about a plan, and writes the terms it settles into the glossary (`GLOSSARY.md` by default) and the decisions into decision records. The Factory reads both. `domain-modeling` does the same; the plain `grilling` primitive writes no documents, so don't recommend it.
+- `to-spec`: turns the settled idea into a spec and publishes it to the issue tracker. It writes no glossary or decision records, so the setting rule below doesn't apply to it.
 
-Splitting a spec into issues is `factory-tickets`' job, not theirs.
+Splitting a spec into issues is planned as the Factory's `factory-tickets` (issue #6, not yet installed); don't recommend the upstream `to-tickets` instead, and don't name `factory-tickets` in the report until it exists.
 
 For each candidate:
 

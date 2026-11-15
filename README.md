@@ -28,8 +28,8 @@ The Factory starts at a ready issue. The work before it uses established skills,
 
 1. **Grilling**: stress-test the idea; settled terms and decisions land in the glossary and decision records.
 2. **Spec**: write down what to build.
-3. **`factory-tickets`**: split the spec into issues.
-4. **The person labels** the issues they accept `ready-for-agent`.
+3. **`factory-tickets`** (planned, [#6](https://github.com/albert-schilling/skills/issues/6)): split the spec into issues. Until it exists, split by hand.
+4. **The person labels** the issues they accept ready (`ready-for-agent` by default, `labels.ready` in the config).
 5. **`/factory <issue>`**: a run, below, ends in a pull request the person merges.
 
 ## How a run works

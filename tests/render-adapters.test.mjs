@@ -15,10 +15,10 @@ describe("the adapters' rendered files", () => {
 });
 
 describe("the Claude Code adapter", () => {
-  it("has each of the seven phase agents", () => {
+  it("has each of the eight phase agents", () => {
     const agents = Object.keys(files).filter((path) => path.includes("/claude-code/agents/"));
 
-    assert.equal(agents.length, 7);
+    assert.equal(agents.length, 8);
   });
 
   it("maps model tier, access and effort to Claude Code's frontmatter, with the result format preloaded", () => {

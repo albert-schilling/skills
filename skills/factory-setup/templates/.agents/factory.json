@@ -15,7 +15,7 @@
     "friction": "friction",
     "preExisting": "pre-existing"
   },
-  "installed": { "version": "", "files": [] },
+  "installed": { "version": "", "setupVersion": "", "files": [] },
   "testFiles": [],
   "riskTiers": [
     { "tier": "high", "paths": [".github/workflows/**", ".agents/**", ".claude/**"] },

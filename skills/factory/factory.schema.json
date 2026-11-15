@@ -81,10 +81,11 @@
       "description": "What `factory-setup` installed, and from which version of the Factory. `/factory` compares `version` with the `factory` skill's current one and refuses to start when they differ. Written by `factory-setup`; never edit by hand.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["version", "files"],
+      "required": ["version", "setupVersion", "files"],
       "properties": {
         "version": { "description": "The `computedHash` of the `factory` skill in `skills-lock.json` when setup last ran.", "type": "string" },
-        "files": { "description": "The files setup installed or merged into, from the project root: each agent file, and `.claude/settings.json` for the Stop hook. Each agent file also carries the version in its first frontmatter comment.", "type": "array", "items": { "type": "string" } }
+        "setupVersion": { "description": "The `computedHash` of the `factory-setup` skill in `skills-lock.json` when setup last ran, so an update that changes only the setup steps also asks for a re-run.", "type": "string" },
+        "files": { "description": "The files setup installed or merged into, from the project root: each agent file, and `.claude/settings.json` for the Stop hook. Each agent file also carries the version in a frontmatter comment after its "Rendered from" line.", "type": "array", "items": { "type": "string" } }
       }
     },
     "riskTiers": {

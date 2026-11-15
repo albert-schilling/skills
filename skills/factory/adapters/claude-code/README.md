@@ -17,6 +17,11 @@ How the Factory's actions map to Claude Code's tools, and where `factory-setup` 
 - The phase agents are `.claude/agents/factory-*.md`, copied by `factory-setup` from [`agents/`](agents/) next to this file. Those are rendered from the Factory's neutral agent files (`../../agents/`) in the repository the Factory comes from; edit neither copy in a project.
 - The implementer's PreToolUse hook (in its agent file) and the project's Stop hook ([`settings.json`](settings.json), merged into `.claude/settings.json`) run the scripts in the Factory's `hooks/claude-code/` folder, at `.claude/skills/factory/`. Claude Code finds installed skills there whether `npx skills` copied them or linked them from `.agents/skills/`.
 
+## What setup installs, and how it is marked
+
+- `.claude/agents/factory-*.md`: each gets the line `# Installed by factory-setup from Factory version <version>` after its "Rendered from" frontmatter comment (the first line stays "Rendered from"; stale agents are found by it).
+- `.claude/settings.json`: the Stop hook entry running `stop-validate.mjs`. JSON has no comments, so it isn't marked; `installed.files` lists the file, and the entry is found by its command.
+
 ## Gotchas
 
 - Claude Code skips an agent's frontmatter hooks until the folder's workspace trust dialog has been accepted, and logs that only to the debug log; a fresh cloud container hasn't accepted it. Check a hook with `--debug`, or by passing it through `--settings`.

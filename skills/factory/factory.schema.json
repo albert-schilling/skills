@@ -77,6 +77,17 @@
       "items": { "type": "string" },
       "minItems": 1
     },
+    "installed": {
+      "description": "What `factory-setup` installed, and from which version of the Factory. `/factory` compares `version` and `setupVersion` with the current hashes of the `factory` and `factory-setup` skills and refuses to start when either differs. Written by `factory-setup`; never edit by hand.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "setupVersion", "files"],
+      "properties": {
+        "version": { "description": "The `computedHash` of the `factory` skill in `skills-lock.json` when setup last ran.", "type": "string" },
+        "setupVersion": { "description": "The `computedHash` of the `factory-setup` skill in `skills-lock.json` when setup last ran, so an update that changes only the setup steps also asks for a re-run.", "type": "string" },
+        "files": { "description": "The files setup installed or merged into, from the project root. The adapter's README says what that is and how each file is marked with the version.", "type": "array", "items": { "type": "string" } }
+      }
+    },
     "riskTiers": {
       "description": "Rules that set the minimum Risk Tier from the changed paths. For each path the first rule whose globs match sets its tier, so list high before low and end with a catch-all; the change takes its paths' highest tier. High: infrastructure, CI workflows, authentication, the database schema and migrations, prompts and content filters, personal data, outgoing messages, and the Factory's own files. Low: docs, test-only changes, tooling with no runtime effect. Medium: the rest.",
       "type": "array",

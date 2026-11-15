@@ -128,9 +128,9 @@ describe("every piece", () => {
     assert.deepEqual(textFiles.filter((file) => outside.test(read(file))), []);
   });
 
-  it("names Claude Code's tools only in its adapter and installer", () => {
+  it("names Claude Code's tools only in its adapter", () => {
     const tools = /\b(AskUserQuestion|SendMessage|EnterWorktree|ExitWorktree|subagent_type)\b|`Agent` tool|the Agent tool/;
-    const allowed = ["factory/adapters/claude-code/README.md", "factory-setup/SKILL.md"];
+    const allowed = ["factory/adapters/claude-code/README.md"];
 
     assert.deepEqual(textFiles.filter((file) => !allowed.includes(file) && tools.test(read(file))), []);
   });

@@ -61,15 +61,13 @@ Then check `.agents/factory.json` against `factory.schema.json`, and fix each pr
 Install what the adapter provides: `../factory/adapters/<codingAgent>/` and its README, which says what it installs, where, and how to mark each file with the Factory version. These steps hold for every coding agent:
 
 1. **Before replacing anything**: read `installed` from `.agents/factory.json` (absent on a first setup) and keep what the adapter installed earlier, to compare with.
-2. **Install** what the adapter says, replacing earlier copies and leaving files the Factory didn't install alone. Delete each file in the previous `installed.files` that the adapter no longer installs, unless setup merges into it (a shared settings file, for example); the adapter's own rule below covers setups with no `installed` yet. Mark each installed file with the Factory version the way the adapter says. `<version>` is the `computedHash` of the `factory` skill in `skills-lock.json`; without an entry for `factory` or `factory-setup`, skip the version steps.
+2. **Install**: follow the adapter's _Install_ section, replacing earlier copies and leaving files the Factory didn't install alone. Delete each file in the previous `installed.files` that the adapter no longer installs, unless setup merges into it (a shared settings file, for example); the adapter's rule for stale files covers setups with no `installed` yet. Mark each installed file with the Factory version the way the adapter says. `<version>` is the `computedHash` of the `factory` skill in `skills-lock.json`; without an entry for `factory` or `factory-setup`, skip the version steps.
 3. **Record the install**: set `installed` in `.agents/factory.json` (the template has it empty) to `{ "version": "<version>", "setupVersion": "<the computedHash of the factory-setup skill>", "files": [...] }`, listing every file you installed or merged into. This is the one place the installed version is kept; `/factory` compares it with the skills' current hashes.
 4. **Report what changed** between the previous and the new version: files added, removed or changed. The skills' own changes are in the repository the Factory was installed from (`source` in `skills-lock.json`).
 
-Then follow the adapter's _Install_ section (`../factory/adapters/<codingAgent>/README.md`): it says what to copy or merge where, how to link the skills so the hooks find their scripts, and what to check afterwards.
-
 The hooks need Node 22 or newer: check `node --version`, and tell the person when it is missing or older. Then check that the end-of-turn hook passes: run `validate` once yourself. When it fails, the hook will keep every turn going for one more try, so fix what fails or ask the person.
 
-Read the adapter's _Gotchas_ and tell the person the ones that affect them now.
+Tell the person what the adapter's _Install_ section says to tell them at setup.
 
 ## 6. Labels
 

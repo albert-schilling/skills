@@ -34,6 +34,8 @@ From this folder, into the project:
   - After replacing a link, check that `.claude/skills/factory/hooks/claude-code/stop-validate.mjs` resolves (`test -f`), and tell the person when it doesn't.
 - **Worktrees**: add `.claude/worktrees/` to `.gitignore` if it isn't there.
 
+Tell the person at setup: the workspace trust gotcha and the `npx skills` absolute-links gotcha below (re-run `factory-setup` after installing or updating skills). The other gotchas matter at run time.
+
 ## Gotchas
 
 - Claude Code skips an agent's frontmatter hooks until the folder's workspace trust dialog has been accepted, and logs that only to the debug log; a fresh cloud container hasn't accepted it. Check a hook with `--debug`, or by passing it through `--settings`.

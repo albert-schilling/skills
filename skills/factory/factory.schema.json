@@ -85,7 +85,7 @@
       "properties": {
         "version": { "description": "The `computedHash` of the `factory` skill in `skills-lock.json` when setup last ran.", "type": "string" },
         "setupVersion": { "description": "The `computedHash` of the `factory-setup` skill in `skills-lock.json` when setup last ran, so an update that changes only the setup steps also asks for a re-run.", "type": "string" },
-        "files": { "description": "The files setup installed or merged into, from the project root: each agent file, and `.claude/settings.json` for the Stop hook. Each agent file also carries the version in a frontmatter comment after its Rendered-from line.", "type": "array", "items": { "type": "string" } }
+        "files": { "description": "The files setup installed or merged into, from the project root. The adapter's README says what that is and how each file is marked with the version.", "type": "array", "items": { "type": "string" } }
       }
     },
     "riskTiers": {

@@ -44,10 +44,12 @@ describe("the skills", () => {
     });
   }
 
-  it("only a person starts the factory and the setup", () => {
-    for (const skill of ["factory", "factory-setup"]) {
-      assert.match(read(`${skill}/SKILL.md`), /^disable-model-invocation: true$/m, skill);
-    }
+  it("only a person starts the setup", () => {
+    assert.match(read("factory-setup/SKILL.md"), /^disable-model-invocation: true$/m);
+  });
+
+  it("an agent may start the factory, so it can run several issues in a row", () => {
+    assert.doesNotMatch(read("factory/SKILL.md"), /^disable-model-invocation:/m);
   });
 });
 

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, it } from "node:test";
 import { renderAll, staleFiles } from "../scripts/render-adapters.mjs";
@@ -19,6 +19,17 @@ describe("the Claude Code adapter", () => {
     const agents = Object.keys(files).filter((path) => path.includes("/claude-code/agents/"));
 
     assert.equal(agents.length, 7);
+  });
+
+  it("tells every agent about the worktree guard, while the neutral agents stay free of tool names", () => {
+    for (const [path, content] of Object.entries(files)) {
+      if (!path.includes("/claude-code/agents/")) continue;
+      assert.match(content, /In a worktree, run git and other file-changing shell commands one at a time/, path);
+      assert.match(content, /Edit and Write/, path);
+    }
+    for (const file of readdirSync(join(repo, "skills/factory/agents"))) {
+      assert.doesNotMatch(readFileSync(join(repo, "skills/factory/agents", file), "utf8"), /worktree guard|Edit and Write/, file);
+    }
   });
 
   it("maps model tier, access and effort to Claude Code's frontmatter, with the result format preloaded", () => {

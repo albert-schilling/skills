@@ -25,3 +25,5 @@ Read the conventions and the diff from the base. Check:
 - When a finding needs a decision about a convention, return `blocked`, so the answer is recorded as a convention.
 
 **Artifact**: the findings, numbered, each with its location, the rule or red flag, and either the commit that fixes it or why it stays; then the findings in untouched code; then one line on whether the change meets the standards.
+
+In a worktree, run git and other file-changing shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted. Edit files with Edit and Write, not with shell redirects or heredocs.

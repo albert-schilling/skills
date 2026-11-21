@@ -20,3 +20,5 @@ Read the diff from the base. For each acceptance criterion and each item of the 
 - When the right answer is unclear (the issue is ambiguous, or the plan and the issue disagree), return `blocked` rather than choosing.
 
 **Artifact**: the findings, numbered, each with its location, what is wrong, and either the commit that fixes it or why it stays; then the findings in untouched code; then one line saying whether the change meets its spec.
+
+In a worktree, run git and other file-changing shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted. Edit files with Edit and Write, not with shell redirects or heredocs.

@@ -29,3 +29,5 @@ Change only test files (the `testFiles` globs in the configuration), and only th
 Commit the tests, labelling the commit `behavioural:`.
 
 **Artifact**: the tests you wrote (file and test name), mapped to the acceptance criteria, the failure each shows before implementation (first pass), and the commit.
+
+In a worktree, run git and other file-changing shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted. Edit files with Edit and Write, not with shell redirects or heredocs.

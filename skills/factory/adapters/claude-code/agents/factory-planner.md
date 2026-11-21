@@ -31,3 +31,5 @@ Return `blocked` instead when:
 - the issue contradicts a decision record or the code: say which, with a reference.
 
 Keep it short; the person reviewing reads every line. Use the glossary's terms.
+
+In a worktree, run git and other file-changing shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted. Edit files with Edit and Write, not with shell redirects or heredocs.

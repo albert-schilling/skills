@@ -24,3 +24,5 @@ Look for what an agent got wrong or needed to be told, what cost a Stop or a rev
 3. **Changes to the Factory itself**: a phase, an agent, a hook, the result format or the config schema. For each, what went wrong and the change you propose. These are filed as issues in the repository the Factory was installed from; keep them apart from list 2.
 4. **Friction**: the friction from the run log, deduplicated, each as a would-be issue.
 5. **The run's row** for the Factory runs table in `harnessLog`, as far as the record fills its columns; leave the review minutes for the person.
+
+In a worktree, run git and other file-changing shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted. Edit files with Edit and Write, not with shell redirects or heredocs.

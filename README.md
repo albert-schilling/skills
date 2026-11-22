@@ -61,7 +61,7 @@ The phase agents, in [`skills/factory/agents/`](skills/factory/agents/), are wri
 | `factory-reviewer-spec`      | Does it do what the issue says, and nothing more?          | strong, high       |
 | `factory-reviewer-standards` | Conventions, design red flags, test quality, test cheating | strong, high       |
 | `factory-reviewer-security`  | Access, input, secrets, personal data, model calls         | strong, high       |
-| `factory-retro`              | Retro: judges the run from its record; Factory changes apart | strong, high     |
+| `factory-retro`              | The Retro, from the run's record alone                     | strong, high       |
 
 The hooks, in [`skills/factory/hooks/`](skills/factory/hooks/), keep their logic apart from any coding agent; each adapter has a thin wrapper:
 

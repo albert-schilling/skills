@@ -28,7 +28,7 @@ This skill names actions, not tools. Read `adapters/<config.codingAgent>/README.
 
 The issue holds the run's state, so a run can stop and later resume in another session. Keep three comments on it, each found by the hidden marker on its first line and edited in place, never posted twice:
 
-- `<!-- factory:run -->` **Run log**: the branch, the worktree, the phase reached, the Risk Tier, each Stop (phase, questions, answers, where each answer was recorded), the friction from every result, and, until the pull request exists, each review round's findings with their answers and the evidence gathered so far.
+- `<!-- factory:run -->` **Run log**: the branch, the worktree, the phase reached, the Risk Tier, each Stop (phase, questions, answers, where each answer was recorded), each round of changes the person requested on the Alignment Document (what they asked for and what the planner changed), the friction from every result, and, until the pull request exists, each review round's findings with their answers and the evidence gathered so far.
 - `<!-- factory:research -->` **Research summary**: the questions and the researcher's answers.
 - `<!-- factory:alignment-document -->` **Alignment Document**, with a status line: `Status: awaiting review`, then `Status: approved <date>`, and the approved Risk Tier, noting when the person set it.
 
@@ -87,7 +87,7 @@ A `blocked` result proposing a split ends the run once the person answers: on ap
 
 ### 5. The planned Stop: review of the Alignment Document
 
-Stop here, before any test or code is written. Link the comment and ask the person to approve it, request changes, or change the Risk Tier. They may also edit the comment on GitHub. Changes requested: send them to the planner and edit the comment in place; ask again. Once approved, read the comment again and use its text from here on; set its status to approved. The person may end the session here; `/factory <issue>` resumes after approval.
+Stop here, before any test or code is written. Link the comment and ask the person to approve it, request changes, or change the Risk Tier. They may also edit the comment on GitHub. Changes requested: send them to the planner, edit the comment in place, and add the round to the run log (the retro reads the run log, not the replaced plan); ask again. Once approved, read the comment again and use its text from here on; set its status to approved. The person may end the session here; `/factory <issue>` resumes after approval.
 
 ### 6. Tests, first pass
 

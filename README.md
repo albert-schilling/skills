@@ -37,7 +37,7 @@ Requirements:
 9. **Review**: spec and standards reviewers, up to three rounds; a security reviewer for High Risk Tier.
 10. **Verify**: `validate`, the one command that runs what CI runs.
 11. **Pull request**, with evidence, Risk Tier and merge danger.
-12. **Retro**: harness log entries, harness changes and friction, filed only with the person's agreement.
+12. **Retro**, by `factory-retro` in a fresh context: harness log entries, changes to this repository, changes to the Factory itself (listed apart) and friction, filed only with the person's agreement.
 
 Any phase can stop with numbered questions instead of guessing. The orchestrator asks the person and records each answer where it belongs (the issue, a conventions file, the glossary or a decision record), then resumes.
 
@@ -61,6 +61,7 @@ The phase agents, in [`skills/factory/agents/`](skills/factory/agents/), are wri
 | `factory-reviewer-spec`      | Does it do what the issue says, and nothing more?          | strong, high       |
 | `factory-reviewer-standards` | Conventions, design red flags, test quality, test cheating | strong, high       |
 | `factory-reviewer-security`  | Access, input, secrets, personal data, model calls         | strong, high       |
+| `factory-retro`              | The Retro, from the run's record alone                     | strong, high       |
 
 The hooks, in [`skills/factory/hooks/`](skills/factory/hooks/), keep their logic apart from any coding agent; each adapter has a thin wrapper:
 

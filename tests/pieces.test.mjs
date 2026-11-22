@@ -28,6 +28,7 @@ const expected = {
   "factory-reviewer-spec": { model: "strong", effort: "high", access: "write" },
   "factory-reviewer-standards": { model: "strong", effort: "high", access: "write" },
   "factory-reviewer-security": { model: "strong", effort: "high", access: "write" },
+  "factory-retro": { model: "strong", effort: "high", access: "read" },
 };
 
 describe("the skills", () => {
@@ -56,7 +57,7 @@ describe("the skills", () => {
 describe("the phase agents", () => {
   const names = readdirSync(join(skillsDir, "factory/agents")).map((file) => file.replace(/\.md$/, ""));
 
-  it("are exactly the seven", () => {
+  it("are exactly the eight", () => {
     assert.deepEqual(names.toSorted(), Object.keys(expected).toSorted());
   });
 

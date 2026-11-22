@@ -30,3 +30,5 @@ Check at least:
 - When a fix needs a decision (a trade-off between safety and what the issue asks for), return `blocked` with the options.
 
 **Artifact**: the findings, numbered, each with its location, who could exploit it and how, and either the commit that fixes it or why it stays; then the findings in untouched code; then one line on whether the change is safe to merge.
+
+In a worktree, run git and other file-changing shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted. Edit files with Edit and Write, not with shell redirects or heredocs.

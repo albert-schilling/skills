@@ -22,3 +22,5 @@ Your final message is a result in the `factory-result` format. If that skill isn
 - Use the terms of the glossary named in the configuration.
 
 **Artifact**: the answers, numbered like the questions, then the files you read.
+
+In a worktree, run git and other file-changing shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted. Edit files with Edit and Write, not with shell redirects or heredocs.

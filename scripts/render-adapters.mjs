@@ -41,6 +41,9 @@ const claudeCode = {
   tools: { read: "Read, Grep, Glob, Bash", write: "Read, Grep, Glob, Edit, Write, Bash" },
   hook: (script) => `node "$CLAUDE_PROJECT_DIR"/.claude/skills/factory/hooks/claude-code/${script}`,
   resultSkill: ".claude/skills/factory-result/SKILL.md",
+  // Claude Code's worktree guard refuses compound shell commands; every agent has Bash, so every one is told.
+  shellNote:
+    "\nIn a worktree, run git and other file-changing shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted. Edit files with Edit and Write, not with shell redirects or heredocs.\n",
 
   render(name, text) {
     const { fields, body } = parseAgent(text);
@@ -71,7 +74,7 @@ const claudeCode = {
       );
     }
     lines.push("---", "");
-    return lines.join("\n") + body.replaceAll("{{factory-result}}", this.resultSkill);
+    return lines.join("\n") + body.replaceAll("{{factory-result}}", this.resultSkill).trimEnd() + "\n" + this.shellNote;
   },
 
   // The project settings the Factory adds: the Stop hook that runs `validate`.

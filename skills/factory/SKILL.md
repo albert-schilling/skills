@@ -1,7 +1,6 @@
 ---
 name: factory
 description: Run one issue through the Factory, from intake to a pull request and a retro, stopping whenever it needs a person.
-disable-model-invocation: true
 argument-hint: "<issue number>"
 ---
 

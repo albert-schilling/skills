@@ -29,6 +29,25 @@ export function runValidate(root) {
 }
 
 /**
+ * The most of a failed `validate`'s output an agent is handed, in characters: about 1,000 tokens,
+ * enough for the summary and failed tasks a test or task runner prints at the end.
+ */
+export const outputLimit = 4000;
+
+/**
+ * The end of `output`, at most `limit` characters with the note, starting at a whole line. Says
+ * how much it left out. Short output comes back as it is.
+ */
+export function shortenOutput(output, limit = outputLimit) {
+  if (output.length <= limit) return output;
+  const note = (count) => `[${count.toLocaleString("en-US")} characters left out]\n`;
+  let kept = output.slice(output.length - (limit - note(output.length).length));
+  const lineStart = kept.indexOf("\n");
+  if (lineStart !== -1 && lineStart < kept.length - 1) kept = kept.slice(lineStart + 1);
+  return note(output.length - kept.length) + kept;
+}
+
+/**
  * What makes two failures the same, for telling whether an agent's try changed anything: the
  * output's lines without durations and percentages, in any order, since tools that run tasks in
  * parallel print them in a different order each time.

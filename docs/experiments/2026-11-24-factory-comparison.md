@@ -41,9 +41,24 @@ All five finished alone with CI passing. All five came out at 1,000 to 1,900 cha
 
 - **The Factory on Opus wrote the best change**, ranked first by two of three reviewers with no must-fix, for about twice the cost and two to three times the time of one agent.
 - **A plain Opus agent came close:** second, no must-fix, 44% of the cost and 36% of the time.
-- **Sonnet everywhere is worse and dearer.** Setup 2 scored lowest, had a real bug, and cost the most, because it re-read about four times as much context (47 million cached tokens against 12 million).
-- **The phases alone don't carry the value.** One agent following them (setup 3) cost as much as the plain agent, scored lower and had a bug. Whatever the Factory adds seems to come from separate agents with fresh contexts, such as the reviewers, not from the order of the steps.
+- **Sonnet everywhere is worse.** Setup 2 scored lowest and had a real bug. Its high cost came from the Stop hook, not the model: its orchestrator started agents in the background, against the adapter, and ended its turn while waiting. Each turn end ran `validate` against the red first-pass tests, and the hook passed on the whole output, about 242,000 characters, 17 times. That cost about $10 of the $13.56.
+- **The plan carries the value, more than the reviews.** Both Opus Factory runs researched first, and their Alignment Documents named the code to reuse: the schema to check input, and an existing `sameContent` to keep the version when nothing changed. The blind reviewers praised exactly that. The single-agent setups (3 and 4b) copied the schema's rules by hand. In setup 1, review rounds 2 and 3 cost $1.43 and produced one structural commit.
+- **The phases alone don't carry the value.** One agent following them (setup 3) cost as much as the plain agent, scored lower and had a bug.
 - **Two Factory runs on Opus differed** (mean ranks 1.3 and 3.0). With one run per setup, the noise is about as large as the differences.
+
+## Where the cost goes
+
+Setup 1, by phase, from each agent's own transcript:
+
+| Part                            | Model  | Cost  | Time   |
+| ------------------------------- | ------ | ----- | ------ |
+| Orchestrator                    | Opus   | $2.46 | ~8 min |
+| Review, 3 rounds of 2 reviewers | Opus   | $2.84 | 10 min |
+| Tests, first pass               | Opus   | $1.59 | 6 min  |
+| Planner                         | Opus   | $0.89 | 5 min  |
+| Tests, second pass              | Opus   | $0.65 | 2 min  |
+| Implementer                     | Sonnet | $0.58 | 3 min  |
+| Researcher                      | Sonnet | $0.34 | 1 min  |
 
 ## Limits
 
@@ -53,5 +68,9 @@ All five finished alone with CI passing. All five came out at 1,000 to 1,900 cha
 
 ## Next
 
-- Keep the strong tier on Opus; don't put every agent on the fast tier.
+- Keep the strong tier on Opus; don't put every agent on the fast tier. Planning is where the quality came from, for about $0.90.
+- [#47](https://github.com/albert-schilling/skills/issues/47): the Stop hook passes a short summary of a failed `validate`.
+- [#48](https://github.com/albert-schilling/skills/issues/48): spec and standards reviewers in parallel, read-only, with one agent fixing; another round only after a behavioural fix. In setup 1, about $1.40 and 5 minutes less.
+- [#38](https://github.com/albert-schilling/skills/issues/38): a test budget in the plan. The first test pass is the most expensive agent.
+- Estimate, not measured: with #47 and #48, a run like setup 1 costs about $7 and takes 25 to 28 minutes.
 - Compare setups 1 and 4b on two or three more issues, each small enough for one pull request, to see whether the Factory's lead holds.

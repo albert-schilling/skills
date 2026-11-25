@@ -232,6 +232,10 @@ The project owns everything `factory-setup` writes into it (the config, the conv
 - **Risk Tier**: high, medium or low, set by the change's paths and raised by the planner. It decides whether a person reads the code.
 - **Friction**: a papercut an agent hit but didn't fix because it was outside its issue, filed as an issue.
 
+## Experiments
+
+- [2026-11-24: the Factory against simpler setups](docs/experiments/2026-11-24-factory-comparison.md): on one issue, the Factory on Opus wrote the best change, a plain Opus agent came close for under half the cost, and an all-Sonnet Factory was worst. Also: where the cost goes, and what to change.
+
 ## Working on the Factory
 
 Change the neutral agent files in `skills/factory/agents/`, then run `node scripts/render-adapters.mjs` to update the adapters' copies.

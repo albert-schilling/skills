@@ -5,14 +5,18 @@
 import { readFileSync } from "node:fs";
 import { checkToolCall, configPath, readTestFiles } from "../test-files.mjs";
 import { spawnSync } from "node:child_process";
+import { resolve } from "node:path";
 
 // The repository the call works in: the git worktree holding the event's `cwd`, which in a Factory
 // run is the issue's worktree, not the checkout the session started in. Falls back to the project.
+// It is built from `cwd` and `--show-cdup`, not `--show-toplevel`, so it keeps the spelling of the
+// tool's paths: git resolves symlinks (on macOS /var is /private/var), and a root spelled another
+// way would put every path outside it.
 function projectRoot(cwd) {
   const fallback = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
   if (typeof cwd !== "string") return fallback;
-  const git = spawnSync("git", ["-C", cwd, "rev-parse", "--show-toplevel"], { encoding: "utf8" });
-  return git.status === 0 ? git.stdout.trim() : fallback;
+  const git = spawnSync("git", ["-C", cwd, "rev-parse", "--show-cdup"], { encoding: "utf8" });
+  return git.status === 0 ? resolve(cwd, git.stdout.trim()) : fallback;
 }
 
 const input = JSON.parse(readFileSync(0, "utf8"));

@@ -138,7 +138,10 @@ describe("the implementer's test-file hook (Claude Code)", () => {
   it("matches paths from the worktree the call runs in, not the checkout the session started in", () => {
     const repo = join(project, "repo");
     const worktree = join(project, "worktree");
-    const git = (...args) => spawnSync("git", args, { cwd: repo, encoding: "utf8" });
+    const git = (...args) => {
+      const run = spawnSync("git", args, { cwd: repo, encoding: "utf8" });
+      assert.equal(run.status, 0, `setup failed: git ${args.join(" ")}\n${run.stderr}`);
+    };
     mkdirSync(join(repo, ".agents"), { recursive: true });
     writeFileSync(join(repo, ".agents/factory.json"), JSON.stringify({ testFiles: ["src/**/*.test.ts"] }));
     git("init", "-q");
@@ -153,6 +156,8 @@ describe("the implementer's test-file hook (Claude Code)", () => {
       encoding: "utf8",
     });
 
+    assert.equal(result.status, 0, result.stderr);
+    assert.notEqual(result.stdout, "", "the hook allowed a test file in the worktree");
     assert.equal(JSON.parse(result.stdout).hookSpecificOutput.permissionDecision, "deny");
   });
 

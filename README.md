@@ -26,6 +26,36 @@ Requirements:
 
 The Factory starts at a ready issue. The work before it uses established skills, which `/factory-setup` recommends (with install commands) when they're missing, and doesn't recommend again when they're installed. Grilling skills such as `grill-with-docs` from [`mattpocock/skills`](https://github.com/mattpocock/skills) should write to the project's `glossary` and `decisionRecords`; setup checks that they do.
 
+```mermaid
+flowchart LR
+  G(["Grilling"]):::person
+  D[("Glossary and<br/>decision records")]:::store
+  S(["Spec"]):::person
+  T["factory-tickets<br/>(planned)"]:::planned
+  H(["Split by hand"]):::person
+  L(["Label issues<br/>ready-for-agent"]):::person
+  F["/factory &lt;issue&gt;"]:::agent
+  P[("Pull request")]:::store
+  M(["Merge"]):::person
+
+  G -->|writes| D
+  G --> S
+  S -.-> T
+  S --> H
+  T -.-> L
+  H --> L
+  L --> F
+  F --> P
+  P --> M
+
+  classDef person fill:#fde68a,stroke:#92400e,stroke-width:2px,color:#1c1917
+  classDef agent fill:#bfdbfe,stroke:#1e40af,stroke-width:1px,color:#0f172a
+  classDef store fill:#bbf7d0,stroke:#166534,stroke-width:1px,color:#052e16
+  classDef planned fill:#e2e8f0,stroke:#475569,stroke-width:1px,stroke-dasharray:5 3,color:#1e293b
+```
+
+Rounded yellow: the person (helped by their coding agent). Blue: the Factory. Green: where results are kept. Dashed: planned, not built yet.
+
 1. **Grilling**: stress-test the idea; settled terms and decisions land in the glossary and decision records.
 2. **Spec**: write down what to build.
 3. **`factory-tickets`** (planned, [#6](https://github.com/albert-schilling/skills/issues/6)): split the spec into issues. Until it exists, split by hand.
@@ -35,6 +65,45 @@ The Factory starts at a ready issue. The work before it uses established skills,
 ## How a run works
 
 `/factory <issue>` runs in the main session and starts one phase agent after another. A person reviews the plan before any code exists, and merges at the end; the agents never merge.
+
+```mermaid
+flowchart TD
+  subgraph Plan
+    direction TB
+    I("1 Intake"):::orch --> W("2 Worktree"):::orch
+    W --> R["3 Research"]:::agent
+    R --> A["4 Alignment Document"]:::agent
+  end
+  A --> AS{{"5 Stop: the person<br/>reviews the plan"}}:::stop
+  AS -->|changes requested| A
+  AS -->|approved| T1
+  subgraph Build
+    direction TB
+    T1["6 Tests, first pass"]:::agent --> IM["7 Implementation"]:::agent
+    IM --> T2["8 Tests, second pass"]:::agent
+    T2 --> RV["9 Review round:<br/>spec, then standards"]:::agent
+    RV -->|"fixes, up to 3 rounds"| RV
+    RV --> HR{"High<br/>Risk Tier?"}:::orch
+    HR -->|yes| SEC["Security review"]:::agent
+    HR -->|no| V
+    SEC --> V("10 Verify"):::orch
+  end
+  subgraph Ship
+    direction TB
+    PR("11 Pull request"):::orch --> RT["12 Retro"]:::agent
+  end
+  V --> PR
+  Plan & Build & Ship -.->|blocked| ST{{"Stop: ask the person,<br/>record, resume"}}:::stop
+
+  classDef orch fill:#e2e8f0,stroke:#334155,stroke-width:1px,color:#0f172a
+  classDef agent fill:#bfdbfe,stroke:#1e40af,stroke-width:1px,color:#0f172a
+  classDef stop fill:#fecaca,stroke:#b91c1c,stroke-width:3px,color:#450a0a
+  style Plan fill:none,stroke:#64748b
+  style Build fill:none,stroke:#64748b
+  style Ship fill:none,stroke:#64748b
+```
+
+Grey: the orchestrator's own steps. Blue: a phase agent. Red hexagon: a Stop, where the person decides.
 
 1. **Intake**: the issue has the `ready-for-agent` label, every section of the issue template, and no open "Depends on".
 2. **Worktree**: one branch and worktree per issue.
@@ -50,6 +119,62 @@ The Factory starts at a ready issue. The work before it uses established skills,
 12. **Retro**, by `factory-retro` in a fresh context: harness log entries, changes to this repository, changes to the Factory itself (listed apart) and friction, filed only with the person's agreement.
 
 Any phase can stop with numbered questions instead of guessing. The orchestrator asks the person and records each answer where it belongs (the issue, a conventions file, the glossary or a decision record), then resumes.
+
+```mermaid
+flowchart LR
+  B["A phase returns<br/>blocked"]:::agent --> S{{"Stop"}}:::stop
+  S --> Q(["The person answers;<br/>recommended answer first"]):::person
+  Q --> RE("Record the answer"):::orch
+  RE -.-> W1[("Issue and run log")]:::store
+  RE -.-> W2[("Conventions")]:::store
+  RE -.-> W3[("Glossary or<br/>decision records")]:::store
+  RE -.-> W4[("Issue on the Factory")]:::store
+  RE -->|then| RS("Resume the phase"):::orch
+
+  classDef person fill:#fde68a,stroke:#92400e,stroke-width:2px,color:#1c1917
+  classDef orch fill:#e2e8f0,stroke:#334155,stroke-width:1px,color:#0f172a
+  classDef agent fill:#bfdbfe,stroke:#1e40af,stroke-width:1px,color:#0f172a
+  classDef stop fill:#fecaca,stroke:#b91c1c,stroke-width:3px,color:#450a0a
+  classDef store fill:#bbf7d0,stroke:#166534,stroke-width:1px,color:#052e16
+```
+
+A check that fails twice, three review rounds, or `validate` failing twice is a Stop too. The person may also end the run there.
+
+### Who does what
+
+```mermaid
+flowchart TB
+  P(["Person"]):::person
+  O("Orchestrator<br/>main session"):::orch
+  subgraph fast ["Fast tier"]
+    RS["researcher"]:::agent
+    IM["implementer"]:::agent
+  end
+  subgraph strong ["Strong tier"]
+    PL["planner"]:::agent
+    TW["test-writer"]:::agent
+    RV["reviewers: spec,<br/>standards, security"]:::agent
+    RT["retro"]:::agent
+  end
+  IS[("Issue comments:<br/>run log, research,<br/>Alignment Document")]:::store
+  PR[("Pull request:<br/>findings, evidence")]:::store
+
+  P <-->|"questions, answers,<br/>approval"| O
+  O -->|starts, checks| fast
+  O -->|starts, checks| strong
+  O -->|keeps state| IS
+  O -->|opens| PR
+  P -->|merges| PR
+
+  classDef person fill:#fde68a,stroke:#92400e,stroke-width:2px,color:#1c1917
+  classDef orch fill:#e2e8f0,stroke:#334155,stroke-width:1px,color:#0f172a
+  classDef agent fill:#bfdbfe,stroke:#1e40af,stroke-width:1px,color:#0f172a
+  classDef store fill:#bbf7d0,stroke:#166534,stroke-width:1px,color:#052e16
+  style fast fill:none,stroke:#64748b
+  style strong fill:none,stroke:#64748b
+```
+
+The orchestrator does no phase's work itself: it starts each agent, checks what it reports, and puts every question to the person. The issue holds the run's state, so a run can stop and resume in another session. The retro judges the run from the issue and the pull request alone.
 
 ## The pieces
 

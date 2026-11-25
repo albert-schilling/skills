@@ -234,7 +234,7 @@ The project owns everything `factory-setup` writes into it (the config, the conv
 
 ## Experiments
 
-- [2026-11-24: the Factory against simpler setups](docs/experiments/2026-11-24-factory-comparison.md): on one issue, the Factory on Opus wrote the best change, a plain Opus agent came close for under half the cost, and an all-Sonnet Factory was worst and dearest.
+- [2026-11-24: the Factory against simpler setups](docs/experiments/2026-11-24-factory-comparison.md): on one issue, the Factory on Opus wrote the best change, a plain Opus agent came close for under half the cost, and an all-Sonnet Factory was worst. Also: where the cost goes, and what to change.
 
 ## Working on the Factory
 

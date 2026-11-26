@@ -107,6 +107,11 @@ describe("the implementer's test-file hook (Claude Code)", () => {
       "mv new.json src/fixtures",
       "mv src/story.test.ts dist/",
       "cp other.json src/fixtures/story.json",
+      "sed -i 's|a.*|b|' src/story.test.ts",
+      "sed -i 's/a/b/;s/c/d/' src/story.test.ts",
+      "sed -i 's/a && b/c/' src/story.test.ts",
+      'sed -i "s|a|b|" src/story.test.ts',
+      "npx vitest run 2>&1 | tail -20 && rm src/story.test.ts",
     ]) {
       it(`denies ${JSON.stringify(command)}, which reaches a test file through a directory`, () => {
         assert.ok(denied(runHook("Bash", { command })));
@@ -130,6 +135,8 @@ describe("the implementer's test-file hook (Claude Code)", () => {
 
     for (const command of [
       "sed -i 's#a.*#b#' src/App.tsx",
+      "sed -i 's|a.*|b|' src/App.tsx",
+      "sed -i 's/a/b/;s/c/d/' src/App.tsx",
       "sed -i 's/.*/x/' src/App.tsx",
       "sed -i -e 's/a*/b/' src/App.tsx",
       "perl -pi -e 's/.*/x/' src/App.tsx",

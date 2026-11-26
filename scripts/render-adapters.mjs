@@ -42,8 +42,12 @@ const claudeCode = {
   hook: (script) => `node "$CLAUDE_PROJECT_DIR"/.claude/skills/factory/hooks/claude-code/${script}`,
   resultSkill: ".claude/skills/factory-result/SKILL.md",
   // Claude Code's worktree guard refuses compound shell commands; every agent has Bash, so every one is told.
-  shellNote:
-    "\nIn a worktree, run git and other file-changing shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted. Edit files with Edit and Write, not with shell redirects or heredocs.\n",
+  // Only agents with write access have Edit and Write, so only they are pointed to them.
+  shellNote: {
+    read: "\nIn a worktree, run git and other shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted.\n",
+    write:
+      "\nIn a worktree, run git and other file-changing shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted. Edit files with Edit and Write, not with shell redirects or heredocs.\n",
+  },
 
   render(name, text) {
     const { fields, body } = parseAgent(text);
@@ -74,7 +78,7 @@ const claudeCode = {
       );
     }
     lines.push("---", "");
-    return lines.join("\n") + body.replaceAll("{{factory-result}}", this.resultSkill).trimEnd() + "\n" + this.shellNote;
+    return lines.join("\n") + body.replaceAll("{{factory-result}}", this.resultSkill).trimEnd() + "\n" + this.shellNote[fields.access];
   },
 
   // The project settings the Factory adds: the Stop hook that runs `validate`.

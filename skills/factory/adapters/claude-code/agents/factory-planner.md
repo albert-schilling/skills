@@ -32,4 +32,4 @@ Return `blocked` instead when:
 
 Keep it short; the person reviewing reads every line. Use the glossary's terms.
 
-In a worktree, run git and other file-changing shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted. Edit files with Edit and Write, not with shell redirects or heredocs.
+In a worktree, run git and other shell commands one at a time: Claude Code's worktree guard refuses chained commands (`&&`, `;`, heredocs, process substitution), and a refused command is wasted.

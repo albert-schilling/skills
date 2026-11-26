@@ -34,7 +34,7 @@ From this folder, into the project:
   - After replacing a link, check that `.claude/skills/factory/hooks/claude-code/stop-validate.mjs` resolves (`test -f`), and tell the person when it doesn't.
 - **Worktrees**: add `.claude/worktrees/` to `.gitignore` if it isn't there.
 
-Tell the person at setup: the workspace trust gotcha and the `npx skills` absolute-links gotcha below (re-run `factory-setup` after installing or updating skills). The other gotchas matter at run time.
+Tell the person at setup: the workspace trust gotcha below. The other gotchas matter at run time.
 
 ## Gotchas
 
@@ -42,4 +42,3 @@ Tell the person at setup: the workspace trust gotcha and the `npx skills` absolu
 - An agent's `skills:` preload reaches it only when it runs as a sub-agent; `claude --agent <name>` starts it without them, which is why each agent's instructions say where to read the result format.
 - The Stop hook blocks a turn while `validate` fails, but when the stop after a block (`stop_hook_active`) fails the same way, it lets the turn end and shows the failure to the person in a `systemMessage`. It keeps the last failure per session in the system's temp folder. Without that, a failure the agent can't fix repeats the whole `validate` run until Claude Code overrides the hook after nine blocks. Both messages carry only the last 4,000 characters of the output, with a note of how much was left out; the same-failure check compares the full output.
 - A git worktree inside the repository holds a second copy of every file. Tools that scan the whole tree (formatters, monorepo tools) see each file twice unless `.claude/worktrees/` is in `.gitignore`.
-- `npx skills add` and `npx skills update` can replace `.claude/skills`, or a link in it, with an absolute symlink to a folder on the machine that ran them. It works there and nowhere else: in another clone, a worktree, CI or a cloud session the link points nowhere, and the hooks can't find their scripts. Re-run `factory-setup` after installing or updating skills; it replaces such links with relative ones.

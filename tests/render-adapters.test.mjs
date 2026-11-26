@@ -21,11 +21,15 @@ describe("the Claude Code adapter", () => {
     assert.equal(agents.length, 8);
   });
 
-  it("tells every agent about the worktree guard, while the neutral agents stay free of tool names", () => {
+  it("tells every agent about the worktree guard, and only agents that can edit about Edit and Write, while the neutral agents stay free of tool names", () => {
     for (const [path, content] of Object.entries(files)) {
       if (!path.includes("/claude-code/agents/")) continue;
-      assert.match(content, /In a worktree, run git and other file-changing shell commands one at a time/, path);
-      assert.match(content, /Edit and Write/, path);
+      assert.match(content, /In a worktree, run git and other (file-changing )?shell commands one at a time/, path);
+      if (/^tools: .*\bEdit\b/m.test(content)) {
+        assert.match(content, /Edit and Write/, path);
+      } else {
+        assert.doesNotMatch(content, /Edit and Write/, path);
+      }
     }
     for (const file of readdirSync(join(repo, "skills/factory/agents"))) {
       assert.doesNotMatch(readFileSync(join(repo, "skills/factory/agents", file), "utf8"), /worktree guard|Edit and Write/, file);

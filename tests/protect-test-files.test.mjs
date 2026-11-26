@@ -128,6 +128,43 @@ describe("the implementer's test-file hook (Claude Code)", () => {
       });
     }
 
+    for (const command of [
+      "sed -i 's#a.*#b#' src/App.tsx",
+      "sed -i 's/.*/x/' src/App.tsx",
+      "sed -i -e 's/a*/b/' src/App.tsx",
+      "perl -pi -e 's/.*/x/' src/App.tsx",
+      "python3 - <<'PY'\nopen('src/App.tsx','w').write('x')\nPY",
+      "cat > src/App.tsx <<'EOF'\nrm -rf src\nEOF",
+    ]) {
+      it(`allows ${JSON.stringify(command)}, which only edits a source file`, () => {
+        assert.equal(runHook("Bash", { command }).decision, undefined);
+      });
+    }
+
+    for (const command of [
+      "echo $((1<<2))\nrm -rf src",
+      "cat <<<hi\nrm -rf src",
+      'echo "a <<b"\nrm -rf src',
+      "cat <<END-X\nbody\nEND-X\nrm -rf src",
+    ]) {
+      it(`denies ${JSON.stringify(command)}, where a later line writes a test file`, () => {
+        assert.ok(denied(runHook("Bash", { command })));
+      });
+    }
+
+    it("still denies sed -i on a test file", () => {
+      assert.ok(denied(runHook("Bash", { command: "sed -i 's/a/b/' src/story.test.ts" })));
+    });
+
+    it("ignores gitignored build output when a wildcard widens to its folder", () => {
+      writeFileSync(join(project, ".gitignore"), "out/\n");
+      spawnSync("git", ["init", "-q"], { cwd: project });
+      mkdirSync(join(project, "out/fixtures"), { recursive: true });
+      writeFileSync(join(project, "out/fixtures/x.d.ts"), "");
+
+      assert.equal(runHook("Bash", { command: "rm -rf out" }).decision, undefined);
+    });
+
     it("denies a write after a cd it can't follow", () => {
       const result = runHook("Bash", { command: 'cd "$TMPDIR" && rm -rf src' });
 

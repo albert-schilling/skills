@@ -6,8 +6,9 @@
 // ones that plainly write a file (redirects, rm, sed -i, git checkout, …), following `cd` and
 // looking inside directories they remove or restore; the standards reviewer's cheat detection
 // catches the rest.
+import { spawnSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { basename, isAbsolute, join, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { globToRegExp } from "./glob.mjs";
 
 export const configPath = ".agents/factory.json";
@@ -38,7 +39,7 @@ const skippedDirectories = new Set(["node_modules", ".git", ".nx"]);
 function shellTargets(command, cwd) {
   const targets = [];
   let dir = cwd;
-  for (const segment of command.split(/&&|\|\||[;|\n]/)) {
+  for (const segment of withoutHeredocBodies(command).split(/&&|\|\||[;|\n]/)) {
     const written = [...segment.matchAll(/>>?\|?\s*(['"]?)([^\s'";&|<>()]+)\1/g)].map((m) => ({
       path: m[2],
       recursive: false,
@@ -57,7 +58,7 @@ function shellTargets(command, cwd) {
     const inPlace = ["sed", "perl"].includes(program) && args.some((arg) => /^-\w*i/.test(arg));
     const gitWrite = program === "git" && writingGitCommands.has(args[0] ?? "");
     if (writingPrograms.has(program) || inPlace || gitWrite) {
-      const paths = args.filter((arg) => !arg.startsWith("-"));
+      const paths = ["sed", "perl"].includes(program) ? scriptFreeArgs(args) : args.filter((arg) => !arg.startsWith("-"));
       const destination = copyingPrograms.has(program) && paths.length > 1 ? paths.at(-1) : undefined;
       // Into a folder (one that exists, or a path ending in `/`), each source lands under its name.
       const intoFolder =
@@ -76,6 +77,42 @@ function shellTargets(command, cwd) {
     targets.push(...written.map(({ path, recursive }) => widen({ path: resolve(from, path), recursive })));
   }
   return targets;
+}
+
+// The file arguments of sed or perl: their script (`s/.*/x/`) is not a path, though a wildcard in it
+// would otherwise stand for a whole folder. The script is the value of `-e`/`-f`, or else the first
+// argument that isn't an option.
+function scriptFreeArgs(args) {
+  const files = [];
+  let hasScript = args.some((arg) => /^-\w*[ef]$/.test(arg) || /^--(expression|file)/.test(arg));
+  let takesValue = false;
+  for (const arg of args) {
+    if (takesValue) takesValue = false;
+    else if (arg.startsWith("-")) takesValue = /^-\w*[ef]$/.test(arg) || /^--(expression|file)$/.test(arg);
+    else if (!hasScript) hasScript = true;
+    else files.push(arg);
+  }
+  return files;
+}
+
+// A heredoc's body is data for a program, not commands, so its lines aren't checked.
+function withoutHeredocBodies(command) {
+  const kept = [];
+  let end;
+  for (const line of command.split("\n")) {
+    if (end !== undefined) {
+      if (line.trim() === end) end = undefined;
+      continue;
+    }
+    kept.push(line);
+    end = line.match(/<<-?\s*(['"]?)(\w+)\1/)?.[2];
+  }
+  return kept.join("\n");
+}
+
+// Whether git ignores the path, as build output usually is; false outside a repository.
+function isGitIgnored(path) {
+  return spawnSync("git", ["-C", dirname(path), "check-ignore", "-q", path]).status === 0;
 }
 
 // The shell expands a wildcard the hook can't see, so a path with one stands for its folder up to
@@ -112,6 +149,7 @@ export function checkToolCall(call, { root, cwd = root, testFiles }) {
     if (!recursive || !isDirectory(path)) return undefined;
     for (const entry of readdirSync(path, { withFileTypes: true })) {
       if (skippedDirectories.has(entry.name)) continue;
+      if (isGitIgnored(join(path, entry.name))) continue;
       const found = testFileAt({ path: join(path, entry.name), recursive: entry.isDirectory() });
       if (found !== undefined) return found;
     }

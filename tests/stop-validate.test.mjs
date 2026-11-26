@@ -131,6 +131,45 @@ describe("the Stop hook (Claude Code)", () => {
     assert.equal(runHook(printsOut, { stop_hook_active: true }).status, 2);
   });
 
+  it("passes only the end of a long failure, and says how much it left out", () => {
+    const filler = "x".repeat(99) + "\n";
+    fail(filler.repeat(2000) + "Tests  3 failed | 120 passed\nFailed tasks: web:test\n");
+
+    const result = runHook(printsOut);
+
+    assert.equal(result.status, 2);
+    assert.ok(result.stderr.length < 4500, `stderr has ${result.stderr.length} characters`);
+    assert.match(result.stderr, /\d[\d,]* characters left out/);
+    assert.match(result.stderr, /Tests {2}3 failed \| 120 passed\nFailed tasks: web:test\n*$/);
+  });
+
+  it("passes a short failure whole, without a note", () => {
+    fail("lint: 2 errors\n");
+
+    assert.doesNotMatch(runHook(printsOut).stderr, /left out/);
+  });
+
+  it("cuts the failure it shows the person when the turn ends anyway", () => {
+    fail("x\n".repeat(100_000) + "server:test-image failed\n");
+    assert.equal(runHook(printsOut).status, 2);
+
+    const result = runHook(printsOut, { stop_hook_active: true });
+
+    assert.equal(result.status, 0);
+    const shown = JSON.parse(result.stdout).systemMessage;
+    assert.ok(shown.length < 4500, `the message has ${shown.length} characters`);
+    assert.match(shown, /server:test-image failed/);
+  });
+
+  it("counts a long failure as changed when only the part it left out changed", () => {
+    const tail = "y\n".repeat(5000) + "Failed tasks: web:test\n";
+    fail("lint: 2 errors\n" + tail);
+    assert.equal(runHook(printsOut).status, 2);
+    fail("typecheck: 1 error\n" + tail);
+
+    assert.equal(runHook(printsOut, { stop_hook_active: true }).status, 2);
+  });
+
   it("keeps the turn going when the config has no validate command", () => {
     const result = runHook({});
 

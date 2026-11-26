@@ -1,7 +1,7 @@
 // Claude Code wrapper for the end-of-turn check (../validate.mjs), run as the project's Stop hook:
 // a turn can't end while `validate` fails. Silent on success, so a clean turn ends without noise.
-// On failure it prints the output to stderr and exits with 2, which Claude Code hands to the agent
-// instead of ending the turn.
+// On failure it prints the end of the output to stderr and exits with 2, which Claude Code hands
+// to the agent instead of ending the turn.
 //
 // One exception: when the agent's try ends with the same failure it was given, the turn ends and
 // the person sees the failure. Some failures can't be fixed from the agent's machine (an image
@@ -11,7 +11,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { failureFingerprint, runValidate } from "../validate.mjs";
+import { failureFingerprint, runValidate, shortenOutput } from "../validate.mjs";
 import { spawnSync } from "node:child_process";
 
 // The repository the call works in: the git worktree holding the event's `cwd`, which in a Factory
@@ -50,7 +50,9 @@ if (result.ok) {
   process.exit(0);
 }
 
+// From the full output, so a change in the part the agent isn't shown still counts as a change.
 const fingerprint = failureFingerprint(result.output);
+const shown = shortenOutput(result.output);
 let previous;
 try {
   previous = readFileSync(lastFailure, "utf8");
@@ -60,12 +62,12 @@ try {
 // `stop_hook_active` is true when this stop follows a block, so the agent has had its try.
 if (input.stop_hook_active === true && previous === fingerprint) {
   rmSync(lastFailure, { force: true });
-  const message = `\`${result.command}\` failed the same way twice, so the turn ends anyway. Check it yourself:\n\n${result.output}`;
+  const message = `\`${result.command}\` failed the same way twice, so the turn ends anyway. Check it yourself:\n\n${shown}`;
   process.stdout.write(JSON.stringify({ systemMessage: message }));
   process.exit(0);
 }
 
 mkdirSync(join(lastFailure, ".."), { recursive: true });
 writeFileSync(lastFailure, fingerprint);
-process.stderr.write(`\`${result.command}\` failed; fix it before ending the turn.\n\n${result.output}\n`);
+process.stderr.write(`\`${result.command}\` failed; fix it before ending the turn.\n\n${shown}\n`);
 process.exit(2);

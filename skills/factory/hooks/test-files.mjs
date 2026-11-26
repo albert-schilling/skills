@@ -39,15 +39,15 @@ const skippedDirectories = new Set(["node_modules", ".git", ".nx"]);
 function shellTargets(command, cwd) {
   const targets = [];
   let dir = cwd;
-  for (const segment of withoutHeredocBodies(command).split(/&&|\|\||[;|\n]/)) {
+  for (const segment of splitCommand(withoutHeredocBodies(command))) {
     const written = [...segment.matchAll(/>>?\|?\s*(['"]?)([^\s'";&|<>()]+)\1/g)].map((m) => ({
       path: m[2],
       recursive: false,
     }));
     const words = segment
       .trim()
-      .split(/\s+/)
-      .map((word) => word.replace(/^['"]|['"]$/g, ""));
+      .match(/"[^"]*"|'[^']*'|\S+/g)
+      ?.map((word) => word.replace(/^['"]|['"]$/g, "")) ?? [];
     while (words.length > 0 && (prefixes.has(words[0]) || /^\w+=/.test(words[0]))) words.shift();
     const [program = "", ...args] = words;
     if (program === "cd" || program === "pushd") {
@@ -95,6 +95,30 @@ function scriptFreeArgs(args) {
     else files.push(arg);
   }
   return files;
+}
+
+// Splits a command into its parts at `&&`, `||`, `;`, `|` and newlines, but not where one is inside
+// single or double quotes (`sed -i 's|a|b|' file`). Only simple quoting is followed.
+function splitCommand(command) {
+  const parts = [];
+  let part = "";
+  let quote;
+  for (let i = 0; i < command.length; i++) {
+    const char = command[i];
+    if (quote !== undefined) {
+      if (char === quote) quote = undefined;
+    } else if (char === "'" || char === '"') {
+      quote = char;
+    } else if (/[;|\n]/.test(char) || (char === "&" && command[i + 1] === "&")) {
+      if (command.startsWith(char + char, i)) i++;
+      parts.push(part);
+      part = "";
+      continue;
+    }
+    part += char;
+  }
+  parts.push(part);
+  return parts;
 }
 
 // A heredoc's body is data for a program, not commands, so its lines aren't checked. Anything that

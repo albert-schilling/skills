@@ -129,6 +129,7 @@ describe("the implementer's test-file hook (Claude Code)", () => {
     }
 
     for (const command of [
+      "sed -i 's#a.*#b#' src/App.tsx",
       "sed -i 's/.*/x/' src/App.tsx",
       "sed -i -e 's/a*/b/' src/App.tsx",
       "perl -pi -e 's/.*/x/' src/App.tsx",
@@ -137,6 +138,17 @@ describe("the implementer's test-file hook (Claude Code)", () => {
     ]) {
       it(`allows ${JSON.stringify(command)}, which only edits a source file`, () => {
         assert.equal(runHook("Bash", { command }).decision, undefined);
+      });
+    }
+
+    for (const command of [
+      "echo $((1<<2))\nrm -rf src",
+      "cat <<<hi\nrm -rf src",
+      'echo "a <<b"\nrm -rf src',
+      "cat <<END-X\nbody\nEND-X\nrm -rf src",
+    ]) {
+      it(`denies ${JSON.stringify(command)}, where a later line writes a test file`, () => {
+        assert.ok(denied(runHook("Bash", { command })));
       });
     }
 

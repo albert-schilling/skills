@@ -79,9 +79,11 @@ function shellTargets(command, cwd) {
   return targets;
 }
 
-// The file arguments of sed or perl: their script (`s/.*/x/`) is not a path, though a wildcard in it
-// would otherwise stand for a whole folder. The script is the value of `-e`/`-f`, or else the first
-// argument that isn't an option.
+// The file arguments of sed or perl: their script (`s#a.*#b#`) is not a path, though a wildcard in
+// it would otherwise stand for a whole folder. The script is the value of `-e`/`-f`, or else the
+// first argument that isn't an option. Other options with a separate value (`sed -l N`,
+// `perl -I dir`) make that value count as the script, so the real script lands in the files: that
+// only denies more, never less.
 function scriptFreeArgs(args) {
   const files = [];
   let hasScript = args.some((arg) => /^-\w*[ef]$/.test(arg) || /^--(expression|file)/.test(arg));
@@ -95,7 +97,9 @@ function scriptFreeArgs(args) {
   return files;
 }
 
-// A heredoc's body is data for a program, not commands, so its lines aren't checked.
+// A heredoc's body is data for a program, not commands, so its lines aren't checked. Anything that
+// only looks like a heredoc (`$((1<<2))`, `<<<`, a `<<` in quotes) never reaches a terminator line,
+// and then the whole command is checked, so a misread can only deny too much, never too little.
 function withoutHeredocBodies(command) {
   const kept = [];
   let end;
@@ -105,9 +109,10 @@ function withoutHeredocBodies(command) {
       continue;
     }
     kept.push(line);
-    end = line.match(/<<-?\s*(['"]?)(\w+)\1/)?.[2];
+    const opener = line.replace(/\$\(\([^)]*\)\)/g, "").match(/(?<!<)<<(?!<)-?\s*(\S+)/);
+    end = opener?.[1].replace(/^['"\\]+|['"]+$/g, "");
   }
-  return kept.join("\n");
+  return end === undefined ? kept.join("\n") : command;
 }
 
 // Whether git ignores the path, as build output usually is; false outside a repository.
@@ -145,11 +150,10 @@ export function checkToolCall(call, { root, cwd = root, testFiles }) {
   const testFileAt = ({ path, recursive }) => {
     const fromRoot = relative(root, path).split("\\").join("/");
     if (fromRoot.startsWith("..") || isAbsolute(fromRoot)) return undefined;
-    if (isTestFile(fromRoot)) return fromRoot;
+    if (isTestFile(fromRoot)) return isGitIgnored(path) ? undefined : fromRoot;
     if (!recursive || !isDirectory(path)) return undefined;
     for (const entry of readdirSync(path, { withFileTypes: true })) {
       if (skippedDirectories.has(entry.name)) continue;
-      if (isGitIgnored(join(path, entry.name))) continue;
       const found = testFileAt({ path: join(path, entry.name), recursive: entry.isDirectory() });
       if (found !== undefined) return found;
     }

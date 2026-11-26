@@ -70,7 +70,7 @@ Setup 1, by phase, from each agent's own transcript:
 
 - Keep the strong tier on Opus; don't put every agent on the fast tier. Planning is where the quality came from, for about $0.90.
 - [#47](https://github.com/albert-schilling/skills/issues/47): the Stop hook passes a short summary of a failed `validate`.
-- [#48](https://github.com/albert-schilling/skills/issues/48): spec and standards reviewers in parallel, read-only, with one agent fixing; another round only after a behavioural fix. In setup 1, about $1.40 and 5 minutes less.
+- [#48](https://github.com/albert-schilling/skills/issues/48): reviewers keep fixing and committing; another round only after a behavioural fix, and it reviews only the fix commits. In setup 1, about $1.40 and 5 minutes less.
 - [#38](https://github.com/albert-schilling/skills/issues/38): a test budget in the plan. The first test pass is the most expensive agent.
 - Estimate, not measured: with #47 and #48, a run like setup 1 costs about $7 and takes 25 to 28 minutes.
 - Compare setups 1 and 4b on two or three more issues, each small enough for one pull request, to see whether the Factory's lead holds.
